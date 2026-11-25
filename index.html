@@ -1,0 +1,2418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Мягкие грани | Калькулятор, Каталог и Склад</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230b1424' stroke='%23ff5b00' stroke-width='1.5'/%3E%3Cpath d='M28 26 h8 v-8 h28 v8 h8 v7 h-8 v7 h-4 l-10 13 l-10 -13 h-4 v-7 h-8 z' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M46 53 a4 4 0 0 0 8 0 z' fill='%23ffffff'/%3E%3Cpath d='M34 68 Q 42 63, 50 68 T 66 68' fill='none' stroke='%23ff5b00' stroke-width='3.2' stroke-linecap='round'/%3E%3Cpath d='M31 73 Q 41 68, 50 73 T 69 73' fill='none' stroke='%23ff5b00' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Montserrat', sans-serif; background-color: #080d1a; color: #f1f5f9; }
+    input[type=range]::-webkit-slider-thumb { appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #ff5b00; cursor: pointer; box-shadow: 0 0 10px rgba(255, 91, 0, 0.6); border: 2px solid #ffffff; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    summary::-webkit-details-marker { display: none; }
+  </style>
+</head>
+<body class="min-h-screen pb-20 selection:bg-[#ff5b00] selection:text-white">
+
+  <div id="toast" class="fixed top-5 right-5 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-[#ff5b00] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-semibold text-sm">
+    <span id="toastMsg">Готово!</span>
+  </div>
+
+  <!-- Скрытый input для быстрой смены фото прямо из списка склада -->
+  <input type="file" id="quickStockPhotoInput" accept="image/*" class="hidden">
+
+  <!-- ШАПКА -->
+  <header class="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-[#0b1424] border border-[#ff5b00]/30 flex items-center justify-center shadow-lg flex-shrink-0">
+          <svg class="w-7 h-7" viewBox="0 0 100 100">
+            <path d="M28 26 h8 v-8 h28 v8 h8 v7 h-8 v7 h-4 l-10 13 l-10 -13 h-4 v-7 h-8 z" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M46 53 a4 4 0 0 0 8 0 z" fill="#ffffff"/>
+            <path d="M34 68 Q 42 63, 50 68 T 66 68" fill="none" stroke="#ff5b00" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M31 73 Q 41 68, 50 73 T 69 73" fill="none" stroke="#ff5b00" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base sm:text-lg text-white tracking-tight">Мягкие грани</h1>
+            <span class="bg-[#ff5b00]/15 text-[#ff5b00] border border-[#ff5b00]/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">студия</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Расчет себестоимости, каталог и складской учет</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" onclick="openSyncModal()" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 text-slate-300 transition">
+          <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="syncStatusText" class="hidden md:inline font-mono text-[11px]">Синхр.</span>
+        </button>
+
+        <div class="bg-slate-900 p-1 rounded-2xl border border-slate-800 flex items-center gap-1">
+          <button id="tabCalc" type="button" onclick="switchTab('calc')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-[#ff5b00] text-white">Калькулятор</button>
+          <button id="tabCatalog" type="button" onclick="switchTab('catalog')" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1">
+            <span>Каталог</span>
+            <span id="catalogCountBadge" class="bg-slate-800 text-slate-300 text-[10px] px-1.5 rounded-full font-bold">0</span>
+          </button>
+          <button id="tabStock" type="button" onclick="switchTab('stock')" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1">
+            <span>📦 Склад и закупки</span>
+            <span id="lowStockBadge" class="hidden bg-red-500/20 text-red-400 border border-red-500/40 text-[10px] px-1.5 rounded-full font-bold">!</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 pt-6">
+
+    <!-- ==================== ВКЛАДКА 1: КАЛЬКУЛЯТОР ==================== -->
+    <div id="viewCalc" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 space-y-6">
+
+        <div id="editingBanner" class="hidden bg-[#ff5b00]/15 border border-[#ff5b00]/50 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 text-xs">
+            <span class="bg-[#ff5b00] text-white px-2.5 py-1 rounded-lg font-extrabold uppercase text-[10px]">Редактирование</span>
+            <span class="text-slate-200">Карточка: <strong id="editingItemTitle" class="text-white font-bold"></strong></span>
+          </div>
+          <button type="button" onclick="cancelEditingMode()" class="text-xs text-orange-300 hover:text-white font-semibold underline">Отменить и создать новый</button>
+        </div>
+
+        <!-- 01. ИЗДЕЛИЕ -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">01</span>
+              <h2 class="font-bold text-white text-base">Изделие и фотография</h2>
+            </div>
+            <button type="button" onclick="resetCalculatorForm()" class="text-xs text-slate-400 hover:text-orange-400">Сбросить расчет</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
+            <div class="sm:col-span-8 space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Название изделия</label>
+                <input id="itemTitle" type="text" placeholder="Напр. Светильник «Лунная скала»" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff5b00]">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Категория изделия</label>
+                <select id="itemCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff5b00]">
+                  <option value="Светильники и лампы">Светильники и лампы</option>
+                  <option value="Брелоки и аксессуары">Брелоки и аксессуары</option>
+                  <option value="Фигурки и декор">Фигурки и декор</option>
+                  <option value="Магниты">Магниты</option>
+                  <option value="Органайзеры и быт">Органайзеры и быт</option>
+                  <option value="Индивидуальный заказ">Индивидуальный заказ</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Заметка для себя</label>
+                <input id="itemNotes" type="text" placeholder="Напр. Слой 0.16, поддержка деревом" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+              </div>
+            </div>
+            <div class="sm:col-span-4 flex flex-col">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Фото товара</label>
+              <div class="relative flex-1 min-h-[140px] rounded-2xl border-2 border-dashed border-slate-800 hover:border-[#ff5b00]/60 bg-slate-950 flex flex-col items-center justify-center p-3 text-center cursor-pointer overflow-hidden">
+                <input type="file" id="itemPhotoInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                <div id="photoPlaceholder" class="flex flex-col items-center space-y-1 text-slate-500">
+                  <span class="text-2xl">📷</span>
+                  <span class="text-[11px] font-medium">Нажмите для фото</span>
+                </div>
+                <div id="photoPreviewContainer" class="hidden absolute inset-0 bg-slate-950">
+                  <img id="photoPreviewImg" src="" alt="Превью" class="w-full h-full object-cover">
+                  <button type="button" onclick="removePhoto(event)" class="absolute top-2 right-2 z-20 bg-slate-900/80 hover:bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 02. ФИЛАМЕНТЫ -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">02</span>
+                <h2 class="font-bold text-white text-base">Филаменты (до 4 видов)</h2>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Список катушек и их цены за 1 кг подтягиваются из вашего «Склада»</p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="filamentsTotalWeight" class="text-xs font-mono font-bold text-white bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">Вес: 0 г</span>
+              <span id="filamentsTotalTimeBadge" class="text-xs font-mono font-bold text-[#ff5b00] bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">Время: 0 ч 0 м</span>
+              <button id="addFilamentBtn" type="button" onclick="addFilamentRow()" class="bg-[#ff5b00]/15 hover:bg-[#ff5b00] text-[#ff5b00] hover:text-white border border-[#ff5b00]/30 px-3 py-1 rounded-xl text-xs font-bold transition">+ Добавить нить</button>
+            </div>
+          </div>
+          <div id="filamentsList" class="space-y-3"></div>
+          <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">Запас на брак / поддержки:</span>
+              <span id="wastePercentVal" class="text-xs font-bold text-orange-400 font-mono">5%</span>
+            </div>
+            <input id="wastePercent" type="range" min="0" max="25" step="1" value="5" class="w-full sm:w-48 accent-[#ff5b00]">
+          </div>
+        </section>
+
+        <!-- 03. ПРИНТЕР И ТРУД -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">03</span>
+            <h2 class="font-bold text-white text-base">Принтер и работа мастера</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white">🖨 Принтер и свет</span>
+                <span id="printerCostDisplay" class="text-xs font-mono font-bold text-orange-400">0 ₽</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-[10px] text-slate-400 mb-1">Часы</label><input id="printHours" type="number" min="0" value="0" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+                <div><label class="block text-[10px] text-slate-400 mb-1">Минуты</label><input id="printMinutes" type="number" min="0" max="59" value="0" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+              </div>
+              <div><label class="block text-[10px] text-slate-400 mb-1">Ставка принтера (₽/час)</label><input id="machineHourlyRate" type="number" min="0" value="40" class="persist-rate w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white">🖐 Труд мастера</span>
+                <span id="laborCostDisplay" class="text-xs font-mono font-bold text-orange-400">0 ₽</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-[10px] text-slate-400 mb-1">Подготовка (мин)</label><input id="prepTime" type="number" min="0" value="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+                <div><label class="block text-[10px] text-slate-400 mb-1">Сборка/постобр. (мин)</label><input id="laborTime" type="number" min="0" value="20" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+              </div>
+              <div><label class="block text-[10px] text-slate-400 mb-1">Оплата труда (₽/час)</label><input id="laborRate" type="number" min="0" value="500" class="persist-rate w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 04. ФУРНИТУРА, УПАКОВКА И МАТЕРИАЛЫ -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">04</span>
+                <h2 class="font-bold text-white text-base">Фурнитура, упаковка и материалы</h2>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Актуальные цены со склада • для ткани указывается размер куска в мм</p>
+            </div>
+            <span id="addonsTotalDisplay" class="text-xs font-mono font-bold text-orange-400 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">Итого допов: 0 ₽</span>
+          </div>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">🔑 Брелоки и NFC (Карабины, Кольца, NFC-метки + свои)</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="addonsGroupKeychains" class="p-4 pt-1 border-t border-slate-900 space-y-2.5"></div>
+          </details>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">💡 Электрика и свет (Свечки, Гирлянда, Лампы, Неон + свои)</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="addonsGroupLamps" class="p-4 pt-1 border-t border-slate-900 space-y-2.5"></div>
+          </details>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">🧲 Магниты</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="addonsGroupMagnets" class="p-4 pt-1 border-t border-slate-900 space-y-2.5"></div>
+          </details>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">🧪 Разное (Смола УФ, Поталь, Скотч, Флок, Мох + свои)</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="addonsGroupMisc" class="p-4 pt-1 border-t border-slate-900 space-y-2.5"></div>
+          </details>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">✂ Ткань (Органза, Фатин — кусок в мм) и 📦 Упаковка</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="addonsGroupFabricBox" class="p-4 pt-1 border-t border-slate-900 space-y-2.5"></div>
+          </details>
+
+          <details class="bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden group">
+            <summary class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 list-none">
+              <span class="font-bold text-xs text-white">➕ Другие позиции со склада и 10 свободных строк</span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div class="p-4 pt-1 border-t border-slate-900 space-y-2">
+              <div id="addonsGroupOtherStock" class="space-y-2"></div>
+              <div id="universalCustomAddonsList" class="space-y-2"></div>
+            </div>
+          </details>
+        </section>
+
+        <!-- 05. НАЦЕНКА -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">05</span>
+              <h2 class="font-bold text-white text-base">Наценка и правила расчета</h2>
+            </div>
+            <span id="marginMultiplierVal" class="text-base font-black text-[#ff5b00] font-mono">x2.0</span>
+          </div>
+          <input id="marginMultiplier" type="range" min="1.0" max="4.0" step="0.1" value="2.0" class="w-full accent-[#ff5b00]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div><label class="block text-xs font-semibold text-slate-300 mb-1">Минимальная цена за 1 шт (₽)</label><input id="minOrderPrice" type="number" value="350" class="persist-rate w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"></div>
+            <div><label class="block text-xs font-semibold text-slate-300 mb-1">Шаг округления цены</label><select id="roundingStep" class="persist-rate w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white"><option value="1">Без округления</option><option value="10">До 10 ₽</option><option value="50" selected>До 50 ₽</option><option value="100">До 100 ₽</option></select></div>
+          </div>
+        </section>
+
+        <!-- 06. НАЛОГОВАЯ (САМОЗАНЯТОСТЬ: 4% ФИЗЛИЦА / 6% ЮРЛИЦА) -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-xl bg-[#ff5b00]/15 text-[#ff5b00] flex items-center justify-center text-xs font-black">06</span>
+              <h2 class="font-bold text-white text-base">Налог для налоговой (НПД)</h2>
+            </div>
+            <span id="taxBadgeDisplay" class="text-xs font-mono font-bold text-slate-400 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">Без налога (0%)</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <button type="button" id="taxBtn_0" onclick="setTaxRate(0)" class="py-2.5 px-2 rounded-2xl text-xs font-bold border transition text-center bg-[#ff5b00] text-white border-[#ff5b00] shadow-md">
+              Без налога<span class="block text-[10px] font-normal opacity-80">0%</span>
+            </button>
+            <button type="button" id="taxBtn_4" onclick="setTaxRate(4)" class="py-2.5 px-2 rounded-2xl text-xs font-bold border transition text-center bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700">
+              👤 Физлица<span class="block text-[10px] font-mono text-orange-400">+4% к цене</span>
+            </button>
+            <button type="button" id="taxBtn_6" onclick="setTaxRate(6)" class="py-2.5 px-2 rounded-2xl text-xs font-bold border transition text-center bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700">
+              🏢 Юрлица / ИП<span class="block text-[10px] font-mono text-orange-400">+6% к цене</span>
+            </button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ПРАВАЯ КОЛОНКА (ИТОГИ ЗА ШТ И ЗА ПАРТИЮ) -->
+      <div class="lg:col-span-4 space-y-6">
+        <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl sticky top-20">
+          <div class="flex items-center justify-between bg-slate-950/90 border border-slate-800 rounded-2xl px-3.5 py-2.5 mb-4">
+            <label for="batchQuantity" class="text-xs font-bold text-slate-300">Количество в партии:</label>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="changeBatchQty(-1)" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-sm border border-slate-800">−</button>
+              <input id="batchQuantity" type="number" min="1" value="1" class="w-14 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-center text-sm font-black text-[#ff5b00]">
+              <button type="button" onclick="changeBatchQty(1)" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-sm border border-slate-800">+</button>
+              <span class="text-xs text-slate-400 font-semibold">шт</span>
+            </div>
+          </div>
+
+          <div class="text-[11px] uppercase tracking-wider font-extrabold text-slate-400 mb-0.5">Цена за 1 штуку</div>
+          <div class="flex items-baseline gap-2 mb-1">
+            <span id="finalPriceDisplay" class="text-3xl sm:text-4xl font-black text-white">0</span>
+            <span class="text-xl font-bold text-[#ff5b00]">₽ / шт</span>
+          </div>
+          <div id="taxInfoSubline" class="hidden text-[11px] text-amber-400 font-mono mb-3">В т.ч. налог: <span id="taxAmountDisplay">0 ₽</span></div>
+          <div id="noTaxSpacer" class="mb-3"></div>
+
+          <div class="bg-[#ff5b00]/10 border border-[#ff5b00]/30 rounded-2xl p-3.5 mb-4">
+            <div class="flex items-center justify-between text-[11px] uppercase tracking-wider font-extrabold text-[#ff5b00] mb-0.5">
+              <span>Цена за партию</span>
+              <span id="batchCountLabel" class="font-mono">1 шт</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="batchPriceDisplay" class="text-3xl sm:text-4xl font-black text-white">0</span>
+              <span class="text-xl font-bold text-[#ff5b00]">₽</span>
+            </div>
+            <div id="batchTaxSubline" class="hidden text-[10px] text-amber-300/90 font-mono mt-0.5">Налог с партии: <span id="batchTaxDisplay">0 ₽</span></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pb-4 mb-4 border-b border-slate-800 text-xs">
+            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+              <span class="text-slate-500 block text-[10px]">Себест. (1 шт):</span>
+              <span id="totalCostDisplay" class="font-bold text-slate-200 font-mono text-sm">0 ₽</span>
+              <span class="text-slate-500 block text-[10px] mt-1">Себест. партии:</span>
+              <span id="batchCostDisplay" class="font-bold text-slate-300 font-mono text-xs">0 ₽</span>
+            </div>
+            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+              <span class="text-slate-500 block text-[10px]">Чистая прибыль (1 шт):</span>
+              <span id="netProfitDisplay" class="font-bold text-emerald-400 font-mono text-sm">0 ₽</span>
+              <span class="text-slate-500 block text-[10px] mt-1">Прибыль партии:</span>
+              <span id="batchProfitDisplay" class="font-bold text-emerald-300 font-mono text-xs">0 ₽</span>
+            </div>
+          </div>
+
+          <div class="space-y-2 mb-5">
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>Затраты на 1 шт</span>
+              <span id="marginPercentBadge" class="text-emerald-400 font-bold">Рентабельность: 50%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-800 flex overflow-hidden">
+              <div id="costBarPlastics" style="width: 25%" class="h-full bg-sky-400"></div>
+              <div id="costBarMachine" style="width: 25%" class="h-full bg-indigo-500"></div>
+              <div id="costBarLabor" style="width: 25%" class="h-full bg-[#ff5b00]"></div>
+              <div id="costBarAddons" style="width: 25%" class="h-full bg-emerald-400"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400 pt-1">
+              <div>• Пластик: <span id="barPlasticsVal" class="font-bold text-slate-200">0 ₽</span></div>
+              <div>• Принтер: <span id="barMachineVal" class="font-bold text-slate-200">0 ₽</span></div>
+              <div>• Труд: <span id="barLaborVal" class="font-bold text-slate-200">0 ₽</span></div>
+              <div>• Допы: <span id="barAddonsVal" class="font-bold text-slate-200">0 ₽</span></div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <button id="saveCatalogBtn" type="button" onclick="saveCurrentItemToCatalog(false)" class="w-full bg-gradient-to-r from-[#ff5b00] to-[#ff7e33] hover:from-[#e04f00] hover:to-[#ff5b00] text-white py-3.5 rounded-2xl font-black text-sm shadow-lg transition">
+              <span id="saveCatalogBtnText">💾 Сохранить в каталог</span>
+            </button>
+            <button id="saveAsNewBtn" type="button" onclick="saveCurrentItemToCatalog(true)" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-orange-400 py-2.5 rounded-2xl font-bold text-xs border border-slate-700">➕ Сохранить как новую карточку</button>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openClientReceiptModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-2xl font-bold text-xs border border-slate-700">📄 Чек клиенту</button>
+              <button type="button" onclick="deductUsedFromStock()" title="Списать потраченные материалы и допы с остатков склада" class="bg-slate-800 hover:bg-emerald-900/50 text-emerald-400 py-2.5 rounded-2xl font-bold text-xs border border-emerald-800/50">📦 Списать склад</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ВКЛАДКА 2: МОЙ КАТАЛОГ ==================== -->
+    <div id="viewCatalog" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
+        <div>
+          <h2 class="font-extrabold text-xl text-white">Каталог изделий</h2>
+          <p class="text-xs text-slate-400">Можно редактировать цены и удалять ненужные карточки</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="catalogSearchInput" oninput="renderCatalog()" type="text" placeholder="Поиск..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+          <select id="catalogCategoryFilter" onchange="renderCatalog()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+            <option value="ALL">Все категории</option>
+            <option value="Светильники и лампы">Светильники и лампы</option>
+            <option value="Брелоки и аксессуары">Брелоки и аксессуары</option>
+            <option value="Фигурки и декор">Фигурки и декор</option>
+            <option value="Магниты">Магниты</option>
+            <option value="Органайзеры и быт">Органайзеры и быт</option>
+            <option value="Индивидуальный заказ">Индивидуальный заказ</option>
+          </select>
+          <button type="button" onclick="syncNow(true)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-xl text-xs border border-slate-700">🔄</button>
+          <button type="button" onclick="exportCatalogToFile()" class="bg-slate-800 hover:bg-slate-700 text-orange-400 px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-slate-700">💾 Экспорт</button>
+          <label class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 cursor-pointer">📁 Импорт<input type="file" accept=".json" onchange="importCatalogFromFile(event)" class="hidden"></label>
+        </div>
+      </div>
+      <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      <div id="catalogEmptyMsg" class="hidden text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl">
+        <p class="text-sm text-slate-400 font-semibold">Каталог пока пуст</p>
+      </div>
+    </div>
+
+    <!-- ==================== ВКЛАДКА 3: СКЛАД И ЗАКУПКИ ==================== -->
+    <div id="viewStock" class="hidden space-y-5">
+      
+      <!-- Верхняя панель склада и сводка по месяцам -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-8 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-extrabold text-xl text-white">Склад и закупки студии</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Создавайте новые строки в любой категории и вносите закупки с фото</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="openPurchaseModal()" class="bg-gradient-to-r from-[#ff5b00] to-[#ff7e33] hover:from-[#e04f00] hover:to-[#ff5b00] text-white px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-lg transition flex items-center gap-1.5">
+              <span>+ Внести закупку</span>
+            </button>
+            <button type="button" onclick="openNewStockItemModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2.5 rounded-2xl text-xs font-bold border border-slate-700 transition">
+              + Новая строка / позиция
+            </button>
+          </div>
+        </div>
+
+        <!-- Карточка статистики закупок за месяц -->
+        <div class="lg:col-span-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-bold text-slate-400">Закупки за период:</span>
+            <select id="stockMonthFilter" onchange="renderStockAndPurchases()" class="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold text-[#ff5b00] focus:outline-none"></select>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <div>
+              <span id="monthlySpendTotal" class="text-2xl font-black text-white">0 ₽</span>
+              <span id="monthlyPurchasesCount" class="text-[11px] text-slate-500 block">0 закупок</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-500 block">Оценка остатков:</span>
+              <span id="totalWarehouseValue" class="text-sm font-bold text-emerald-400 font-mono">0 ₽</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Поиск и быстрые фильтры -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3">
+        <div class="flex flex-wrap items-center gap-2 flex-1">
+          <input id="stockSearchInput" oninput="renderStockAndPurchases()" type="text" placeholder="Быстрый поиск по складу (матовый, шелк, поталь, мох)..." class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white w-full sm:w-80 focus:outline-none focus:border-[#ff5b00]">
+          <button type="button" onclick="toggleAllStockGroups(true)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-semibold">Развернуть все</button>
+          <button type="button" onclick="toggleAllStockGroups(false)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-[11px] font-semibold">Свернуть все</button>
+        </div>
+        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+          <input type="checkbox" id="onlyLowStockChk" onchange="renderStockAndPurchases()" class="w-4 h-4 accent-[#ff5b00]">
+          <span>Только заканчивающиеся</span>
+        </label>
+      </div>
+
+      <!-- СГРУППИРОВАННЫЙ СПИСОК ПО КАТЕГОРИЯМ (АККОРДЕОНЫ) -->
+      <div id="stockGroupedContainer" class="space-y-3"></div>
+
+      <!-- Журнал закупок по месяцам -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-extrabold text-base text-white">📜 Журнал закупок и динамика цен</h3>
+            <p class="text-xs text-slate-400">История покупок за выбранный месяц с расчетом цены за единицу</p>
+          </div>
+        </div>
+        <div id="purchasesHistoryList" class="space-y-2"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ВНЕСТИ ЗАКУПКУ -->
+  <div id="purchaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-extrabold text-white text-base">🛒 Внести новую закупку</h3>
+        <button type="button" onclick="closePurchaseModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Позиция склада (или создайте новую):</label>
+          <select id="purchItemId" onchange="onPurchaseItemSelect()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#ff5b00]"></select>
+        </div>
+
+        <div id="purchCreateNewBox" class="hidden bg-slate-950/90 border border-[#ff5b00]/40 rounded-2xl p-3.5 space-y-2.5">
+          <div class="text-[11px] font-bold text-orange-400">Новая позиция (создастся в выбранной группе):</div>
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">Группа / категория:</label>
+            <select id="purchNewCategory" onchange="onPurchNewCategoryChange()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+              <option value="Филаменты PLA матовый">🧵 Филаменты PLA матовый / мрамор</option>
+              <option value="Филаменты PLA шелк">✨ Филаменты PLA шелк</option>
+              <option value="Филаменты PETG">💧 Филаменты PETG</option>
+              <option value="Филамент Carbon">🖤 Филамент Carbon</option>
+              <option value="Брелоки и NFC">🔑 Брелоки и NFC</option>
+              <option value="Электрика и свет">💡 Электрика и свет</option>
+              <option value="Магниты">🧲 Магниты</option>
+              <option value="Разное">🧪 Разное (Смола, Поталь, Скотч, Флок, Мох)</option>
+              <option value="Ткань и упаковка">✂ Ткань и 📦 Упаковка</option>
+              <option value="Прочее">➕ Другие позиции</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-12 gap-2">
+            <div class="col-span-8">
+              <label class="block text-[10px] text-slate-400 mb-1">Название товара / цвета:</label>
+              <input id="purchNewName" type="text" placeholder="Напр. Цепочка для брелока" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+            </div>
+            <div class="col-span-4">
+              <label class="block text-[10px] text-slate-400 mb-1">Ед. изм.:</label>
+              <select id="purchNewUnit" onchange="onPurchNewUnitChange()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2 py-2 text-xs text-white">
+                <option value="шт">шт</option>
+                <option value="г">г</option>
+                <option value="м">м</option>
+                <option value="мл">мл</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Дата покупки:</label>
+            <input id="purchDate" type="date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Площадка покупки:</label>
+            <select id="purchSupplier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+              <option value="AliExpress" selected>AliExpress</option>
+              <option value="Ozon">Ozon</option>
+              <option value="WB">WB</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Куплено (<span id="purchUnitLabel">г</span>):</label>
+            <input id="purchQty" type="number" step="0.1" value="1000" placeholder="1000" oninput="updatePurchasePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Сумма по чеку (₽):</label>
+            <input id="purchTotalCost" type="number" step="1" placeholder="Напр. 1650" oninput="updatePurchasePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-orange-400">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 rounded-2xl p-2.5">
+          <div class="relative w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center flex-shrink-0">
+            <img id="purchPhotoPreview" src="" class="hidden w-full h-full object-cover">
+            <span id="purchPhotoEmpty" class="text-lg">🎨</span>
+            <button type="button" id="purchRemovePhotoBtn" onclick="clearPurchaseModalPhoto()" title="Убрать фото" class="hidden absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">✕</button>
+          </div>
+          <div class="flex-1">
+            <label class="block font-semibold text-slate-300 mb-0.5">Фото цвета / фурнитуры:</label>
+            <input type="file" id="purchPhotoInput" accept="image/*" class="text-[11px] text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-slate-800 file:text-orange-400 hover:file:bg-slate-700 cursor-pointer">
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+          <div>
+            <span class="text-slate-500 block text-[10px]">Новая цена за 1 <span id="purchUnitLabel2">г</span>:</span>
+            <span id="purchUnitPricePreview" class="text-base font-black text-white font-mono">0 ₽</span>
+            <span id="purchSpoolPreview" class="text-[10px] text-orange-400 font-mono block"></span>
+          </div>
+          <div id="purchPriceDiffBadge" class="text-right font-mono text-[11px]"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closePurchaseModal()" class="bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold">Отмена</button>
+        <button type="button" onclick="submitPurchase()" class="bg-[#ff5b00] hover:bg-[#e04f00] text-white px-5 py-2.5 rounded-xl text-xs font-bold">Записать и обновить цену</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ НОВУЮ ПОЗИЦИЮ / КАТУШКУ НА СКЛАД -->
+  <div id="newStockModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-extrabold text-white text-base">➕ Новая строка / позиция на склад</h3>
+        <button type="button" onclick="closeNewStockItemModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Группа склада (куда встанет строка):</label>
+          <select id="newStockCategory" onchange="onNewStockCategoryChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+            <option value="Филаменты PLA матовый">🧵 Филаменты PLA матовый / мрамор</option>
+            <option value="Филаменты PLA шелк">✨ Филаменты PLA шелк</option>
+            <option value="Филаменты PETG">💧 Филаменты PETG</option>
+            <option value="Филамент Carbon">🖤 Филамент Carbon</option>
+            <option value="Брелоки и NFC">🔑 Брелоки и NFC</option>
+            <option value="Электрика и свет">💡 Электрика и свет</option>
+            <option value="Магниты">🧲 Магниты</option>
+            <option value="Разное">🧪 Разное (Смола, Поталь, Скотч, Флок, Мох)</option>
+            <option value="Ткань и упаковка">✂ Ткань и упаковка</option>
+            <option value="Прочее">➕ Другие позиции</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-12 gap-2">
+          <div class="col-span-8">
+            <label class="block font-semibold text-slate-300 mb-1">Название товара / цвета:</label>
+            <input id="newStockName" type="text" oninput="onNewStockNameInput()" placeholder="Напр. Люверсы или PLA матовый" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+          </div>
+          <div class="col-span-4">
+            <label class="block font-semibold text-slate-300 mb-1">Ед. изм.:</label>
+            <select id="newStockUnit" onchange="onNewStockUnitChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-xs text-white">
+              <option value="г">г</option>
+              <option value="шт">шт</option>
+              <option value="м">м</option>
+              <option value="мл">мл</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Остаток (<span id="newStockQtyUnitLabel">г</span>):</label>
+            <input id="newStockQty" type="number" step="0.1" value="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label id="newStockPriceLabel" class="block font-semibold text-orange-400 mb-1">Цена за 1 шт (₽):</label>
+            <input id="newStockPriceInput" type="number" step="0.01" placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-bold">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Мин. остаток:</label>
+            <input id="newStockMin" type="number" step="1" value="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 rounded-2xl p-2.5">
+          <div class="relative w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center flex-shrink-0">
+            <img id="newStockPhotoPreview" src="" class="hidden w-full h-full object-cover">
+            <span id="newStockPhotoEmpty" class="text-lg">📷</span>
+            <button type="button" id="newStockRemovePhotoBtn" onclick="clearNewStockPhoto()" title="Убрать фото" class="hidden absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">✕</button>
+          </div>
+          <div class="flex-1">
+            <label class="block font-semibold text-slate-300 mb-0.5">Картинка цвета / товара:</label>
+            <input type="file" id="newStockPhotoInput" accept="image/*" class="text-[11px] text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-slate-800 file:text-orange-400 hover:file:bg-slate-700 cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeNewStockItemModal()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs">Отмена</button>
+        <button type="button" onclick="createNewStockItem()" class="bg-[#ff5b00] text-white px-5 py-2 rounded-xl text-xs font-bold">Добавить в группу</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ЧЕК -->
+  <div id="receiptModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-extrabold text-white text-base">Чек клиенту</h3>
+        <button type="button" onclick="closeClientReceiptModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+      <textarea id="receiptTextarea" readonly rows="13" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs font-mono text-slate-200"></textarea>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" onclick="copyReceiptToClipboard()" class="bg-[#ff5b00] text-white py-2.5 rounded-xl font-bold text-xs">📋 Копировать</button>
+        <button type="button" onclick="sendReceiptToTelegram()" class="bg-sky-600 text-white py-2.5 rounded-xl font-bold text-xs">✈️ Telegram</button>
+        <button type="button" onclick="sendReceiptToWhatsApp()" class="bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs">💬 WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: СИНХРОНИЗАЦИЯ -->
+  <div id="syncModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-extrabold text-white text-base">Синхронизация через Vercel API</h3>
+        <button type="button" onclick="closeSyncModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+      <p class="text-xs text-slate-300">Укажите одинаковый код на ПК и телефоне (по умолчанию <strong>myagkie_grani</strong>):</p>
+      <input id="syncStudioCode" type="text" placeholder="myagkie_grani" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono">
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 font-mono">
+        Статус: <span id="syncDiagText" class="text-slate-200">Ожидание...</span>
+      </div>
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" onclick="syncNow(true)" class="bg-slate-800 text-orange-400 px-3.5 py-2 rounded-xl text-xs font-semibold">🔄 Обновить</button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeSyncModal()" class="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs">Закрыть</button>
+          <button type="button" onclick="applyStudioCode()" class="bg-[#ff5b00] text-white px-5 py-2 rounded-xl text-xs font-bold">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DB_NAME = 'MyagkieGraniDB', STORE_NAME = 'catalog_items', CATALOG_KEY = 'myagkie_grani_catalog_v2';
+    const DELETED_IDS_KEY = 'myagkie_grani_deleted_ids', ADDON_PRICES_KEY = 'myagkie_grani_addon_prices_v2';
+    const SPOOL_PRICES_KEY = 'myagkie_grani_spool_prices_v1', STUDIO_CODE_KEY = 'myagkie_grani_studio_code';
+    const STOCK_KEY = 'myagkie_grani_stock_v4', DELETED_STOCK_KEY = 'myagkie_grani_deleted_stock_v1', PURCHASES_KEY = 'myagkie_grani_purchases_v1';
+
+    let editingItemId = null, currentPhotoBase64 = '', dbInstance = null, inMemoryCatalog = [], deletedIds = [], autoSyncTimer = null;
+    let stockItems = [], deletedStockIds = [], purchaseHistory = [], currentTaxRate = 0;
+    let newStockPhotoBase64 = '', purchPhotoBase64 = '', purchPhotoCleared = false, quickPhotoTargetStockId = null;
+    const $ = id => document.getElementById(id);
+
+    const STOCK_GROUPS_ORDER = [
+      { key: 'Филаменты PLA матовый', title: '🧵 Филаменты PLA матовый / мрамор', defaultOpen: true },
+      { key: 'Филаменты PLA шелк', title: '✨ Филаменты PLA шелк', defaultOpen: true },
+      { key: 'Филаменты PETG', title: '💧 Филаменты PETG', defaultOpen: true },
+      { key: 'Филамент Carbon', title: '🖤 Филамент Carbon', defaultOpen: true },
+      { key: 'Брелоки и NFC', title: '🔑 Брелоки и NFC (Карабины, Кольца, NFC-метки)', defaultOpen: true },
+      { key: 'Электрика и свет', title: '💡 Электрика и свет (Свечки, Гирлянда, Лампы, Неон)', defaultOpen: false },
+      { key: 'Магниты', title: '🧲 Магниты', defaultOpen: false },
+      { key: 'Разное', title: '🧪 Разное (Смола УФ, Поталь, Скотч, Флок, Мох)', defaultOpen: false },
+      { key: 'Ткань и упаковка', title: '✂ Ткань и 📦 Упаковка', defaultOpen: false },
+      { key: 'Прочее', title: '➕ Другие позиции', defaultOpen: false }
+    ];
+
+    function buildDefaultStockItems() {
+      const list = [];
+
+      const plaMatteDefaults = [
+        { name: 'PLA матовый — Белый', price: 1.5 },
+        { name: 'PLA матовый — Черный', price: 1.5 },
+        { name: 'PLA мрамор — ', price: 1.9 }
+      ];
+      for (let i = 1; i <= 20; i++) {
+        const def = plaMatteDefaults[i - 1];
+        const nm = def ? def.name : 'PLA матовый — ';
+        list.push({ id: `pla_matte_${i}`, name: nm, matName: nm, category: 'Филаменты PLA матовый', unit: 'г', qty: 0, unitPrice: def ? def.price : 1.5, minQty: 200, photo: '' });
+      }
+
+      for (let i = 1; i <= 20; i++) {
+        const nm = 'PLA шелк — ';
+        list.push({ id: `pla_silk_${i}`, name: nm, matName: nm, category: 'Филаменты PLA шелк', unit: 'г', qty: 0, unitPrice: 1.8, minQty: 200, photo: '' });
+      }
+
+      const petgDefaults = [
+        { name: 'PETG — Прозрачный', price: 1.4 },
+        { name: 'PETG — Белый', price: 1.3 },
+        { name: 'PETG — Черный', price: 1.3 }
+      ];
+      for (let i = 1; i <= 20; i++) {
+        const def = petgDefaults[i - 1];
+        const nm = def ? def.name : 'PETG — ';
+        list.push({ id: `petg_slot_${i}`, name: nm, matName: nm, category: 'Филаменты PETG', unit: 'г', qty: 0, unitPrice: def ? def.price : 1.3, minQty: 200, photo: '' });
+      }
+
+      for (let i = 1; i <= 5; i++) {
+        const nm = i === 1 ? 'Carbon — Черный' : 'Carbon — ';
+        list.push({ id: `carbon_slot_${i}`, name: nm, matName: nm, category: 'Филамент Carbon', unit: 'г', qty: 0, unitPrice: 2.8, minQty: 200, photo: '' });
+      }
+
+      const addonsStock = [
+        { id: 'karabin', name: 'Карабин для брелока', category: 'Брелоки и NFC', unit: 'шт', qty: 0, unitPrice: 0, minQty: 10, addonId: 'karabin', photo: '' },
+        { id: 'rings', name: 'Кольца заводные', category: 'Брелоки и NFC', unit: 'шт', qty: 0, unitPrice: 0, minQty: 20, addonId: 'rings', photo: '' },
+        { id: 'nfc', name: 'NFC-метки', category: 'Брелоки и NFC', unit: 'шт', qty: 0, unitPrice: 0, minQty: 10, addonId: 'nfc', photo: '' },
+        { id: 'candles', name: 'Свечки LED', category: 'Электрика и свет', unit: 'шт', qty: 0, unitPrice: 0, minQty: 5, addonId: 'candles', photo: '' },
+        { id: 'garland', name: 'Гирлянда (нить)', category: 'Электрика и свет', unit: 'шт', qty: 0, unitPrice: 0, minQty: 5, addonId: 'garland', photo: '' },
+        { id: 'roundlamps', name: 'Лампы круглые', category: 'Электрика и свет', unit: 'шт', qty: 0, unitPrice: 0, minQty: 3, addonId: 'roundlamps', photo: '' },
+        { id: 'leds', name: 'Светодиодная лента', category: 'Электрика и свет', unit: 'м', qty: 0, unitPrice: 0, minQty: 2, addonId: 'leds', photo: '' },
+        { id: 'neon', name: 'Гибкий неон 12V', category: 'Электрика и свет', unit: 'м', qty: 0, unitPrice: 0, minQty: 2, addonId: 'neon', photo: '' },
+        { id: 'maground', name: 'Магнит круглый (10×2 мм)', category: 'Магниты', unit: 'шт', qty: 0, unitPrice: 0, minQty: 20, addonId: 'maground', photo: '' },
+        { id: 'magrect', name: 'Магнит прямоугольный (20×10×2)', category: 'Магниты', unit: 'шт', qty: 0, unitPrice: 0, minQty: 10, addonId: 'magrect', photo: '' },
+        { id: 'mag3', name: 'Магнит свой размер', category: 'Магниты', unit: 'шт', qty: 0, unitPrice: 0, minQty: 10, addonId: 'mag3', photo: '' },
+        { id: 'resin', name: 'Смола УФ', category: 'Разное', unit: 'мл', qty: 0, unitPrice: 0, minQty: 20, addonId: 'resin', photo: '' },
+        { id: 'potal', name: 'Поталь (жидкая / мл)', category: 'Разное', unit: 'мл', qty: 0, unitPrice: 0, minQty: 10, addonId: 'potal', photo: '' },
+        { id: 'tape', name: 'Жидкий скотч', category: 'Разное', unit: 'мл', qty: 0, unitPrice: 0, minQty: 10, addonId: 'tape', photo: '' },
+        { id: 'flock', name: 'Флок бархатный (пудра)', category: 'Разное', unit: 'г', qty: 0, unitPrice: 0, minQty: 15, addonId: 'flock', photo: '' },
+        { id: 'moss', name: 'Мох стабилизированный', category: 'Разное', unit: 'г', qty: 0, unitPrice: 0, minQty: 30, addonId: 'moss', photo: '' },
+        { id: 'organza', name: 'Органза', category: 'Ткань и упаковка', unit: 'м', qty: 0, unitPrice: 0, minQty: 1, addonId: 'organza', photo: '' },
+        { id: 'fatin', name: 'Фатин', category: 'Ткань и упаковка', unit: 'м', qty: 0, unitPrice: 0, minQty: 1, addonId: 'fatin', photo: '' },
+        { id: 'box', name: 'Крафт-коробка и бумага', category: 'Ткань и упаковка', unit: 'шт', qty: 0, unitPrice: 0, minQty: 5, addonId: 'box', photo: '' }
+      ];
+      list.push(...addonsStock);
+
+      for (let i = 1; i <= 5; i++) {
+        list.push({ id: `other_slot_${i}`, name: 'Другое — ', category: 'Прочее', unit: 'шт', qty: 0, unitPrice: 0, minQty: 5, photo: '' });
+      }
+
+      return list;
+    }
+
+    function isFilamentCategory(cat) {
+      return cat === 'Филаменты PLA матовый' || cat === 'Филаменты PLA шелк' || cat === 'Филаменты PETG' || cat === 'Филамент Carbon';
+    }
+
+    function normalizeStockCategory(item) {
+      const nm = (item.name || '').toLowerCase();
+      if (item.category === 'Филаменты' || item.category === 'Филаменты PLA') {
+        if (nm.includes('petg')) return 'Филаменты PETG';
+        if (nm.includes('карбон') || nm.includes('carbon')) return 'Филамент Carbon';
+        if (nm.includes('шелк') || nm.includes('шёлк') || nm.includes('silk')) return 'Филаменты PLA шелк';
+        return 'Филаменты PLA матовый';
+      }
+      if (item.category === 'Расходники и декор') return 'Разное';
+      return item.category || 'Прочее';
+    }
+
+    function getAvailableFilaments() {
+      const allFils = stockItems.filter(s => isFilamentCategory(normalizeStockCategory(s)));
+      const filled = allFils.filter(s => !s.name.trim().endsWith('—') || s.qty > 0);
+      const source = filled.length > 0 ? filled : allFils.slice(0, 6);
+      return source.map(s => ({
+        id: s.id,
+        name: s.name.trim(),
+        spoolPrice: s.unitPrice > 0 ? Math.round(s.unitPrice * 1000) : 1500,
+        photo: s.photo || ''
+      }));
+    }
+
+    const ADDON_GROUPS = {
+      addonsGroupKeychains: [
+        { id: 'karabin', label: 'Карабин', unit: 'шт', defUsed: 1 },
+        { id: 'rings', label: 'Кольца', unit: 'шт', defUsed: 1 },
+        { id: 'nfc', label: 'NFC-метки', unit: 'шт', defUsed: 1 }
+      ],
+      addonsGroupLamps: [
+        { id: 'candles', label: 'Свечки LED', unit: 'шт', defUsed: 1 },
+        { id: 'garland', label: 'Гирлянда (нить)', unit: 'шт', defUsed: 1 },
+        { id: 'roundlamps', label: 'Лампы круглые', unit: 'шт', defUsed: 1 },
+        { id: 'leds', label: 'Светодиоды (лента)', unit: 'м', defUsed: 0.5, step: '0.1' },
+        { id: 'neon', label: 'Гибкий неон 12V', unit: 'м', defUsed: 0.8, step: '0.1' }
+      ],
+      addonsGroupMagnets: [
+        { id: 'maground', label: 'Магнит круг.', sizeDef: '10×2 мм', unit: 'шт', defUsed: 2 },
+        { id: 'magrect', label: 'Магнит прям.', sizeDef: '20×10×2 мм', unit: 'шт', defUsed: 1 },
+        { id: 'mag3', label: 'Свой магнит', sizeDef: '', unit: 'шт', defUsed: 1 }
+      ],
+      addonsGroupMisc: [
+        { id: 'resin', label: 'Смола УФ', unit: 'мл', defUsed: 5, step: '0.5' },
+        { id: 'potal', label: 'Поталь', unit: 'мл', defUsed: 2, step: '0.5' },
+        { id: 'tape', label: 'Жидкий скотч', unit: 'мл', defUsed: 2, step: '0.5' },
+        { id: 'flock', label: 'Флок (бархат)', unit: 'г', defUsed: 5, step: '1' },
+        { id: 'moss', label: 'Мох стабилизир.', unit: 'г', defUsed: 15, step: '1' }
+      ],
+      addonsGroupFabricBox: [
+        { id: 'organza', label: 'Органза', isFabricPiece: true, defW: 200, defH: 200 },
+        { id: 'fatin', label: 'Фатин', isFabricPiece: true, defW: 200, defH: 200 },
+        { id: 'box', label: 'Крафт-коробка + бумага', unit: 'шт', defUsed: 1, step: '1' }
+      ]
+    };
+
+    const STOCK_TO_CALC_CONTAINER = {
+      'Брелоки и NFC': 'addonsGroupKeychains',
+      'Электрика и свет': 'addonsGroupLamps',
+      'Магниты': 'addonsGroupMagnets',
+      'Разное': 'addonsGroupMisc',
+      'Ткань и упаковка': 'addonsGroupFabricBox',
+      'Прочее': 'addonsGroupOtherStock'
+    };
+
+    function renderAddonRows() {
+      Object.entries(ADDON_GROUPS).forEach(([containerId, items]) => {
+        const box = $(containerId);
+        if (!box) return;
+        box.innerHTML = items.map(it => {
+          // Специальная строка для ткани (Органза / Фатин): цена за 1 м + кусок Ширина × Длина в мм
+          if (it.isFabricPiece) {
+            return `
+            <div class="grid grid-cols-12 gap-2 items-center text-xs py-1.5 border-b border-slate-900/50 last:border-0">
+              <div class="col-span-12 sm:col-span-3 flex items-center gap-2">
+                <input type="checkbox" id="addon_${it.id}_chk" class="addon-trigger w-4 h-4 accent-[#ff5b00]">
+                <label for="addon_${it.id}_chk" class="text-slate-200 font-medium cursor-pointer">${it.label}</label>
+              </div>
+              <div class="col-span-5 sm:col-span-3 flex items-center gap-1">
+                <input type="number" step="0.01" id="addon_${it.id}_unit_price" placeholder="Цена за 1 м" class="addon-input addon-persist w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 font-mono">
+                <span class="text-[10px] text-slate-500 whitespace-nowrap">₽/м</span>
+              </div>
+              <div class="col-span-7 sm:col-span-4 flex items-center gap-1">
+                <input type="number" step="1" id="addon_${it.id}_w_mm" value="${it.defW}" placeholder="Шир" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1 text-orange-400 font-bold text-center">
+                <span class="text-slate-500 font-bold">×</span>
+                <input type="number" step="1" id="addon_${it.id}_h_mm" value="${it.defH}" placeholder="Дл" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-1.5 py-1 text-orange-400 font-bold text-center">
+                <span class="text-[10px] text-slate-500 whitespace-nowrap">мм <span id="addon_${it.id}_sqm_badge" class="text-slate-400 font-mono">(0.04м²)</span></span>
+              </div>
+              <div class="col-span-12 sm:col-span-2 text-right font-mono font-bold text-white text-xs" id="addon_${it.id}_total">0 ₽</div>
+            </div>`;
+          }
+
+          return `
+          <div class="grid grid-cols-12 gap-2 items-center text-xs py-1 border-b border-slate-900/50 last:border-0">
+            <div class="col-span-12 sm:col-span-4 flex items-center gap-2">
+              <input type="checkbox" id="addon_${it.id}_chk" class="addon-trigger w-4 h-4 accent-[#ff5b00]">
+              ${it.sizeDef !== undefined
+                ? `<input type="text" id="addon_${it.id}_size" value="${it.sizeDef}" placeholder="Размер" class="addon-input addon-persist w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 text-[11px]">`
+                : `<label for="addon_${it.id}_chk" class="text-slate-200 font-medium cursor-pointer">${it.label}</label>`}
+            </div>
+            <div class="col-span-5 sm:col-span-3 flex items-center gap-1">
+              <input type="number" step="0.01" id="addon_${it.id}_unit_price" placeholder="Цена за 1 ${it.unit}" class="addon-input addon-persist w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 font-mono">
+              <span class="text-[10px] text-slate-500 whitespace-nowrap">₽/${it.unit}</span>
+            </div>
+            <div class="col-span-4 sm:col-span-3 flex items-center gap-1">
+              <input type="number" step="${it.step || '1'}" id="addon_${it.id}_used" value="${it.defUsed}" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-orange-400 font-bold text-center">
+              <span class="text-[10px] text-slate-500">${it.unit}</span>
+            </div>
+            <div class="col-span-3 sm:col-span-2 text-right font-mono font-bold text-white text-xs" id="addon_${it.id}_total">0 ₽</div>
+          </div>`;
+        }).join('');
+      });
+
+      const cust = $('universalCustomAddonsList');
+      if (cust) {
+        let html = '';
+        for (let i = 1; i <= 10; i++) {
+          html += `
+            <div class="grid grid-cols-12 gap-2 items-center text-xs py-1 border-b border-slate-900/60 last:border-0">
+              <div class="col-span-12 sm:col-span-4 flex items-center gap-1.5">
+                <input type="checkbox" id="addon_cust_${i}_chk" class="addon-trigger w-4 h-4 accent-[#ff5b00]">
+                <input type="text" id="addon_cust_${i}_name" placeholder="Доп ${i}: Название" class="addon-input addon-persist w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 text-[11px]">
+              </div>
+              <div class="col-span-5 sm:col-span-3 flex items-center gap-1">
+                <input type="number" step="0.01" id="addon_cust_${i}_unit_price" placeholder="Цена 1 шт ₽" class="addon-input addon-persist w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 font-mono">
+                <span class="text-[10px] text-slate-500">₽</span>
+              </div>
+              <div class="col-span-4 sm:col-span-3 flex items-center gap-1">
+                <input type="number" step="0.1" id="addon_cust_${i}_used" value="1" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-orange-400 font-bold text-center">
+                <span class="text-[10px] text-slate-500">шт</span>
+              </div>
+              <div class="col-span-3 sm:col-span-2 text-right font-mono font-bold text-white text-xs" id="addon_cust_${i}_total">0 ₽</div>
+            </div>`;
+        }
+        cust.innerHTML = html;
+      }
+    }
+
+    function renderDynamicCustomStockAddons() {
+      const prevState = {};
+      document.querySelectorAll('.dyn-stock-addon-row').forEach(row => {
+        const stId = row.dataset.stockId;
+        prevState[stId] = {
+          chk: $(`addon_st_${stId}_chk`)?.checked || false,
+          used: $(`addon_st_${stId}_used`)?.value || '1'
+        };
+        row.remove();
+      });
+
+      const customAddons = stockItems.filter(st => {
+        const cat = normalizeStockCategory(st);
+        if (st.addonId || isFilamentCategory(cat)) return false;
+        const cleanName = st.name.trim();
+        return cleanName !== '' && cleanName !== 'Другое —';
+      });
+
+      customAddons.forEach(st => {
+        const cat = normalizeStockCategory(st);
+        const targetContainerId = STOCK_TO_CALC_CONTAINER[cat] || 'addonsGroupOtherStock';
+        const container = $(targetContainerId);
+        if (!container) return;
+
+        const priceVal = st.unitPrice > 0 ? (Number.isInteger(st.unitPrice) ? st.unitPrice : st.unitPrice.toFixed(2)) : '';
+        const saved = prevState[st.id] || { chk: false, used: '1' };
+
+        const row = document.createElement('div');
+        row.className = 'dyn-stock-addon-row grid grid-cols-12 gap-2 items-center text-xs py-1 border-b border-slate-900/50 last:border-0';
+        row.dataset.stockId = st.id;
+        row.innerHTML = `
+          <div class="col-span-12 sm:col-span-4 flex items-center gap-2">
+            <input type="checkbox" id="addon_st_${st.id}_chk" ${saved.chk ? 'checked' : ''} class="addon-trigger w-4 h-4 accent-[#ff5b00]">
+            <label for="addon_st_${st.id}_chk" class="text-slate-200 font-medium cursor-pointer truncate">${st.name.trim()}</label>
+          </div>
+          <div class="col-span-5 sm:col-span-3 flex items-center gap-1">
+            <input type="number" step="0.01" id="addon_st_${st.id}_unit_price" value="${priceVal}" placeholder="Цена за 1 ${st.unit}" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 font-mono">
+            <span class="text-[10px] text-slate-500 whitespace-nowrap">₽/${st.unit}</span>
+          </div>
+          <div class="col-span-4 sm:col-span-3 flex items-center gap-1">
+            <input type="number" step="0.1" id="addon_st_${st.id}_used" value="${saved.used}" class="addon-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-orange-400 font-bold text-center">
+            <span class="text-[10px] text-slate-500">${st.unit}</span>
+          </div>
+          <div class="col-span-3 sm:col-span-2 text-right font-mono font-bold text-white text-xs" id="addon_st_${st.id}_total">0 ₽</div>
+        `;
+
+        row.querySelectorAll('.addon-trigger, .addon-input').forEach(el => {
+          el.addEventListener('input', recalculate);
+          el.addEventListener('change', recalculate);
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    function syncStockPricesToCalculator() {
+      const savedAddons = JSON.parse(localStorage.getItem(ADDON_PRICES_KEY) || '{}');
+      const savedSpools = getSavedSpoolPrices();
+
+      stockItems.forEach(st => {
+        if (st.addonId && st.unitPrice > 0) {
+          const priceStr = Number.isInteger(st.unitPrice) ? String(st.unitPrice) : st.unitPrice.toFixed(2);
+          savedAddons[`addon_${st.addonId}_unit_price`] = priceStr;
+          const inp = $(`addon_${st.addonId}_unit_price`);
+          if (inp) inp.value = priceStr;
+        }
+        if (isFilamentCategory(normalizeStockCategory(st)) && st.unitPrice > 0) {
+          const key = st.name.trim();
+          const spoolCost = Math.round(st.unitPrice * 1000);
+          savedSpools[key] = spoolCost;
+          filamentsState.forEach(f => {
+            if (f.stockId === st.id || f.material === key) {
+              f.material = key;
+              f.spoolPrice = spoolCost;
+            }
+          });
+        }
+      });
+
+      localStorage.setItem(ADDON_PRICES_KEY, JSON.stringify(savedAddons));
+      localStorage.setItem(SPOOL_PRICES_KEY, JSON.stringify(savedSpools));
+      renderDynamicCustomStockAddons();
+      renderFilaments();
+      recalculate();
+    }
+
+    function switchTab(tab) {
+      $('viewCalc').classList.toggle('hidden', tab !== 'calc');
+      $('viewCatalog').classList.toggle('hidden', tab !== 'catalog');
+      $('viewStock').classList.toggle('hidden', tab !== 'stock');
+
+      const activeCls = "px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-[#ff5b00] text-white flex items-center gap-1";
+      const idleCls = "px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-all flex items-center gap-1";
+
+      $('tabCalc').className = tab === 'calc' ? activeCls : idleCls;
+      $('tabCatalog').className = tab === 'catalog' ? activeCls : idleCls;
+      $('tabStock').className = tab === 'stock' ? activeCls : idleCls;
+
+      if (tab === 'calc') {
+        renderDynamicCustomStockAddons();
+        renderFilaments();
+        recalculate();
+      }
+      if (tab === 'catalog') renderCatalog();
+      if (tab === 'stock') renderStockAndPurchases();
+    }
+
+    function showToast(text) {
+      const t = $('toast');
+      $('toastMsg').textContent = text;
+      t.classList.remove('-translate-y-24', 'opacity-0');
+      t.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => { t.classList.add('-translate-y-24', 'opacity-0'); t.classList.remove('translate-y-0', 'opacity-100'); }, 3000);
+    }
+
+    function changeBatchQty(delta) {
+      $('batchQuantity').value = Math.max(1, (parseInt($('batchQuantity').value) || 1) + delta);
+      recalculate();
+    }
+
+    function setTaxRate(rate) {
+      currentTaxRate = rate;
+      [0, 4, 6].forEach(r => {
+        const btn = $(`taxBtn_${r}`);
+        if (!btn) return;
+        if (r === rate) {
+          btn.className = "py-2.5 px-2 rounded-2xl text-xs font-bold border transition text-center bg-[#ff5b00] text-white border-[#ff5b00] shadow-md";
+        } else {
+          btn.className = "py-2.5 px-2 rounded-2xl text-xs font-bold border transition text-center bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700";
+        }
+      });
+
+      const badge = $('taxBadgeDisplay');
+      if (rate === 4) {
+        badge.textContent = 'Физлица (+4%)';
+        badge.className = 'text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/30';
+      } else if (rate === 6) {
+        badge.textContent = 'Юрлица / ИП (+6%)';
+        badge.className = 'text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/30';
+      } else {
+        badge.textContent = 'Без налога (0%)';
+        badge.className = 'text-xs font-mono font-bold text-slate-400 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800';
+      }
+
+      recalculate();
+    }
+
+    function compressImage(file, maxDim = 550, quality = 0.72) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+              else { w = Math.round(w * maxDim / h); h = maxDim; }
+            }
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = () => resolve(e.target.result);
+        };
+      });
+    }
+
+    $('itemPhotoInput').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      currentPhotoBase64 = await compressImage(file, 550, 0.72);
+      $('photoPreviewImg').src = currentPhotoBase64;
+      $('photoPreviewContainer').classList.remove('hidden');
+      $('photoPlaceholder').classList.add('hidden');
+    });
+
+    function removePhoto(e) {
+      if (e) e.stopPropagation();
+      currentPhotoBase64 = '';
+      $('photoPreviewImg').src = '';
+      $('photoPreviewContainer').classList.add('hidden');
+      $('photoPlaceholder').classList.remove('hidden');
+      $('itemPhotoInput').value = '';
+    }
+
+    function getSavedSpoolPrices() { try { return JSON.parse(localStorage.getItem(SPOOL_PRICES_KEY)) || {}; } catch { return {}; } }
+    function getDefaultSpoolPrice(mat) {
+      const avail = getAvailableFilaments();
+      const found = avail.find(x => x.name === mat);
+      if (found) return found.spoolPrice;
+      const saved = getSavedSpoolPrices();
+      if (saved[mat] !== undefined) return saved[mat];
+      return 1500;
+    }
+
+    let filamentsState = [{ id: 1, stockId: 'pla_matte_1', material: 'PLA матовый — Белый', color: '', weight: 80, spoolPrice: 1500, spoolWeight: 1000, hours: 2, minutes: 30 }];
+
+    function renderFilaments() {
+      const list = $('filamentsList');
+      const avail = getAvailableFilaments();
+
+      list.innerHTML = filamentsState.map((fil, idx) => {
+        const matched = avail.find(a => a.name === fil.material || (fil.stockId && a.id === fil.stockId));
+        const swatchHtml = matched && matched.photo
+          ? `<img src="${matched.photo}" class="w-6 h-6 rounded-lg object-cover border border-slate-700 flex-shrink-0">`
+          : `<span class="w-2.5 h-2.5 rounded-full bg-[#ff5b00] flex-shrink-0"></span>`;
+
+        const optionsList = [...avail];
+        if (!optionsList.some(o => o.name === fil.material)) {
+          optionsList.unshift({ id: fil.stockId || '', name: fil.material, spoolPrice: fil.spoolPrice, photo: '' });
+        }
+
+        return `
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-white flex items-center gap-2">${swatchHtml}Нить №${idx + 1}</span>
+            ${filamentsState.length > 1 ? `<button type="button" onclick="removeFilamentRow(${fil.id})" class="text-slate-500 hover:text-red-400 text-xs">✕ Удалить</button>` : ''}
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+            <div class="sm:col-span-5"><label class="block text-[10px] text-slate-400 mb-0.5">Филамент со склада</label>
+              <select onchange="onMaterialChange(${fil.id}, this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#ff5b00]">
+                ${optionsList.map(p => `<option value="${p.name}" ${p.name === fil.material ? 'selected' : ''}>${p.name} (${p.spoolPrice} ₽/кг)</option>`).join('')}
+              </select>
+            </div>
+            <div class="sm:col-span-4"><label class="block text-[10px] text-slate-400 mb-0.5">Уточнение цвета / партии</label><input type="text" value="${fil.color || ''}" placeholder="Если нужно" oninput="updateFilamentValue(${fil.id}, 'color', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white"></div>
+            <div class="sm:col-span-3"><label class="block text-[10px] text-slate-400 mb-0.5">Катушка 1 кг (₽)</label><input type="number" id="spoolPrice_${fil.id}" value="${fil.spoolPrice}" oninput="updateFilamentValue(${fil.id}, 'spoolPrice', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 font-mono"></div>
+          </div>
+          <div class="grid grid-cols-12 gap-2 text-xs items-center">
+            <div class="col-span-6 sm:col-span-4"><label class="block text-[10px] text-slate-400 mb-0.5">Вес (г)</label><input type="number" value="${fil.weight}" oninput="updateFilamentValue(${fil.id}, 'weight', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-orange-400 font-bold"></div>
+            <div class="col-span-3 sm:col-span-3"><label class="block text-[10px] text-slate-400 mb-0.5">Часы</label><input type="number" min="0" value="${fil.hours || 0}" oninput="updateFilamentValue(${fil.id}, 'hours', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white"></div>
+            <div class="col-span-3 sm:col-span-3"><label class="block text-[10px] text-slate-400 mb-0.5">Мин</label><input type="number" min="0" max="59" value="${fil.minutes || 0}" oninput="updateFilamentValue(${fil.id}, 'minutes', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white"></div>
+            <div class="col-span-12 sm:col-span-2 text-right"><span class="text-[10px] text-slate-500 block">Цена:</span><span id="filTotal_${fil.id}" class="font-mono font-bold text-slate-200">0 ₽</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      $('addFilamentBtn').style.display = filamentsState.length >= 4 ? 'none' : 'inline-flex';
+      syncFilamentTotals();
+    }
+
+    function onMaterialChange(id, mat) {
+      const fil = filamentsState.find(f => f.id === id);
+      if (!fil) return;
+      const avail = getAvailableFilaments();
+      const found = avail.find(a => a.name === mat);
+      fil.material = mat;
+      fil.stockId = found ? found.id : '';
+      fil.spoolPrice = found ? found.spoolPrice : getDefaultSpoolPrice(mat);
+      renderFilaments();
+      recalculate();
+    }
+
+    function updateFilamentValue(id, key, val) {
+      const fil = filamentsState.find(f => f.id === id);
+      if (!fil) return;
+      fil[key] = (key === 'material' || key === 'color') ? val : (parseFloat(val) || 0);
+      if (key === 'spoolPrice' && fil.spoolPrice > 0) {
+        const m = getSavedSpoolPrices(); m[fil.material] = fil.spoolPrice;
+        localStorage.setItem(SPOOL_PRICES_KEY, JSON.stringify(m));
+        const st = stockItems.find(x => (fil.stockId && x.id === fil.stockId) || x.name.trim() === fil.material);
+        if (st) { st.unitPrice = fil.spoolPrice / 1000; saveStockToLocal(); }
+        scheduleAutoSync();
+      }
+      syncFilamentTotals(); recalculate();
+    }
+
+    function addFilamentRow() {
+      if (filamentsState.length >= 4) return;
+      const avail = getAvailableFilaments();
+      const first = avail[0] || { id: 'pla_matte_1', name: 'PLA матовый — Белый', spoolPrice: 1500 };
+      filamentsState.push({ id: Date.now(), stockId: first.id, material: first.name, color: '', weight: 30, spoolPrice: first.spoolPrice, spoolWeight: 1000, hours: 1, minutes: 0 });
+      renderFilaments(); recalculate();
+    }
+
+    function removeFilamentRow(id) {
+      if (filamentsState.length <= 1) return;
+      filamentsState = filamentsState.filter(f => f.id !== id);
+      renderFilaments(); recalculate();
+    }
+
+    function syncFilamentTotals() {
+      let totalW = 0, totalMins = 0;
+      filamentsState.forEach(fil => {
+        totalW += (fil.weight || 0);
+        totalMins += ((fil.hours || 0) * 60) + (fil.minutes || 0);
+        const disp = $(`filTotal_${fil.id}`);
+        if (disp) disp.textContent = `${Math.round((fil.weight || 0) * ((fil.spoolPrice || 0) / 1000))} ₽`;
+      });
+      $('filamentsTotalWeight').textContent = `Вес: ${totalW} г`;
+      const h = Math.floor(totalMins / 60), m = totalMins % 60;
+      $('filamentsTotalTimeBadge').textContent = `Время: ${h} ч ${m} м`;
+      $('printHours').value = h; $('printMinutes').value = m;
+    }
+
+    function savePersistedAddonPrices() {
+      const data = {};
+      document.querySelectorAll('.addon-persist, .persist-rate').forEach(inp => { if (inp.id) data[inp.id] = inp.value; });
+      localStorage.setItem(ADDON_PRICES_KEY, JSON.stringify(data));
+      scheduleAutoSync();
+    }
+
+    function loadPersistedAddonPrices() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(ADDON_PRICES_KEY)) || {};
+        Object.keys(saved).forEach(id => { const inp = $(id); if (inp && saved[id] !== undefined) inp.value = saved[id]; });
+      } catch {}
+    }
+
+    function getAddonsSnapshot() {
+      const snap = {};
+      document.querySelectorAll('.addon-trigger, .addon-input').forEach(inp => {
+        if (inp.id) snap[inp.id] = inp.type === 'checkbox' ? inp.checked : inp.value;
+      });
+      return snap;
+    }
+
+    function applyAddonsSnapshot(snap) {
+      if (!snap) return;
+      document.querySelectorAll('.addon-trigger').forEach(chk => chk.checked = false);
+      Object.keys(snap).forEach(id => {
+        const inp = $(id);
+        if (!inp) return;
+        if (inp.type === 'checkbox') inp.checked = Boolean(snap[id]);
+        else if (snap[id] !== '' && snap[id] !== undefined) inp.value = snap[id];
+      });
+    }
+
+    function recalculate() {
+      let rawPlastics = 0;
+      filamentsState.forEach(f => rawPlastics += (f.weight || 0) * ((f.spoolPrice || 0) / 1000));
+      const totalPlastics = rawPlastics * (1 + (parseFloat($('wastePercent').value) || 0) / 100);
+
+      const printH = (parseFloat($('printHours').value) || 0) + ((parseFloat($('printMinutes').value) || 0) / 60);
+      const totalMachine = printH * (parseFloat($('machineHourlyRate').value) || 0);
+      $('printerCostDisplay').textContent = `${Math.round(totalMachine)} ₽`;
+
+      const laborH = ((parseFloat($('prepTime').value) || 0) + (parseFloat($('laborTime').value) || 0)) / 60;
+      const totalLabor = laborH * (parseFloat($('laborRate').value) || 0);
+      $('laborCostDisplay').textContent = `${Math.round(totalLabor)} ₽`;
+
+      let totalAddons = 0;
+      const calcUnitRow = prefix => {
+        const chk = $(`${prefix}_chk`);
+        const unitPrice = parseFloat($(`${prefix}_unit_price`)?.value) || 0;
+        const used = parseFloat($(`${prefix}_used`)?.value) || 0;
+        const tot = (chk && chk.checked) ? used * unitPrice : 0;
+        if ($(`${prefix}_total`)) $(`${prefix}_total`).textContent = `${Math.round(tot)} ₽`;
+        return tot;
+      };
+
+      // Расчет отрезанного куска ткани в мм (Ширина мм × Длина мм -> доля м² от цены за 1 м)
+      const calcFabricPieceRow = id => {
+        const chk = $(`addon_${id}_chk`);
+        const meterPrice = parseFloat($(`addon_${id}_unit_price`)?.value) || 0;
+        const wMm = parseFloat($(`addon_${id}_w_mm`)?.value) || 0;
+        const hMm = parseFloat($(`addon_${id}_h_mm`)?.value) || 0;
+        const sqMeters = (wMm / 1000) * (hMm / 1000);
+        const badge = $(`addon_${id}_sqm_badge`);
+        if (badge) badge.textContent = `(${Number(sqMeters.toFixed(4))}м²)`;
+        const tot = (chk && chk.checked) ? sqMeters * meterPrice : 0;
+        if ($(`addon_${id}_total`)) $(`addon_${id}_total`).textContent = `${Math.round(tot)} ₽`;
+        return tot;
+      };
+
+      const standardUnitIds = ['karabin', 'rings', 'nfc', 'candles', 'garland', 'roundlamps', 'leds', 'neon', 'maground', 'magrect', 'mag3', 'resin', 'potal', 'tape', 'flock', 'moss', 'box'];
+      standardUnitIds.forEach(id => totalAddons += calcUnitRow(`addon_${id}`));
+
+      ['organza', 'fatin'].forEach(id => totalAddons += calcFabricPieceRow(id));
+
+      for (let i = 1; i <= 10; i++) totalAddons += calcUnitRow(`addon_cust_${i}`);
+      stockItems.filter(st => !st.addonId && !isFilamentCategory(normalizeStockCategory(st))).forEach(st => {
+        totalAddons += calcUnitRow(`addon_st_${st.id}`);
+      });
+
+      $('addonsTotalDisplay').textContent = `Итого допов: ${Math.round(totalAddons)} ₽`;
+
+      const totalCost = totalPlastics + totalMachine + totalLabor + totalAddons;
+      let baseCalcPrice = Math.max(totalCost * (parseFloat($('marginMultiplier').value) || 1), parseFloat($('minOrderPrice').value) || 0);
+      const step = parseInt($('roundingStep').value) || 1;
+      const baseUnitPrice = step > 1 ? Math.ceil(Math.round(baseCalcPrice) / step) * step : Math.round(baseCalcPrice);
+
+      const taxAmountUnit = currentTaxRate > 0 ? Math.round(baseUnitPrice * (currentTaxRate / 100)) : 0;
+      const unitPrice = baseUnitPrice + taxAmountUnit;
+
+      const qty = Math.max(1, parseInt($('batchQuantity').value) || 1);
+      const batchPrice = unitPrice * qty;
+      const batchCost = totalCost * qty;
+      const batchTax = taxAmountUnit * qty;
+
+      const unitProfit = Math.max(0, unitPrice - totalCost - taxAmountUnit);
+      const batchProfit = unitProfit * qty;
+
+      $('finalPriceDisplay').textContent = unitPrice.toLocaleString('ru-RU');
+      $('batchCountLabel').textContent = `${qty} шт`;
+      $('batchPriceDisplay').textContent = batchPrice.toLocaleString('ru-RU');
+      $('totalCostDisplay').textContent = `${Math.round(totalCost).toLocaleString('ru-RU')} ₽`;
+      $('batchCostDisplay').textContent = `${Math.round(batchCost).toLocaleString('ru-RU')} ₽`;
+      $('netProfitDisplay').textContent = `${Math.round(unitProfit).toLocaleString('ru-RU')} ₽`;
+      $('batchProfitDisplay').textContent = `${Math.round(batchProfit).toLocaleString('ru-RU')} ₽`;
+      $('marginPercentBadge').textContent = `Рентабельность: ${unitPrice > 0 ? Math.round((unitProfit / unitPrice) * 100) : 0}%`;
+
+      if (currentTaxRate > 0) {
+        $('taxInfoSubline').classList.remove('hidden');
+        $('noTaxSpacer').classList.add('hidden');
+        $('taxAmountDisplay').textContent = `${taxAmountUnit.toLocaleString('ru-RU')} ₽ (${currentTaxRate}%)`;
+        $('batchTaxSubline').classList.remove('hidden');
+        $('batchTaxDisplay').textContent = `${batchTax.toLocaleString('ru-RU')} ₽`;
+      } else {
+        $('taxInfoSubline').classList.add('hidden');
+        $('noTaxSpacer').classList.remove('hidden');
+        $('batchTaxSubline').classList.add('hidden');
+      }
+
+      $('barPlasticsVal').textContent = `${Math.round(totalPlastics)} ₽`;
+      $('barMachineVal').textContent = `${Math.round(totalMachine)} ₽`;
+      $('barLaborVal').textContent = `${Math.round(totalLabor)} ₽`;
+      $('barAddonsVal').textContent = `${Math.round(totalAddons)} ₽`;
+      if (totalCost > 0) {
+        $('costBarPlastics').style.width = `${(totalPlastics / totalCost) * 100}%`;
+        $('costBarMachine').style.width = `${(totalMachine / totalCost) * 100}%`;
+        $('costBarLabor').style.width = `${(totalLabor / totalCost) * 100}%`;
+        $('costBarAddons').style.width = `${(totalAddons / totalCost) * 100}%`;
+      }
+    }
+
+    function deductUsedFromStock() {
+      const qty = Math.max(1, parseInt($('batchQuantity').value) || 1);
+      const wasteFactor = 1 + (parseFloat($('wastePercent').value) || 0) / 100;
+      let deductedCount = 0;
+
+      filamentsState.forEach(f => {
+        const st = stockItems.find(x => (f.stockId && x.id === f.stockId) || x.name.trim() === f.material);
+        if (st && f.weight > 0) {
+          const usedGrams = Math.round(f.weight * wasteFactor * qty);
+          st.qty = Math.max(0, Math.round((st.qty - usedGrams) * 100) / 100);
+          deductedCount++;
+        }
+      });
+
+      stockItems.forEach(st => {
+        if (st.addonId === 'organza' || st.addonId === 'fatin') {
+          const chk = $(`addon_${st.addonId}_chk`);
+          const wMm = parseFloat($(`addon_${st.addonId}_w_mm`)?.value) || 0;
+          const hMm = parseFloat($(`addon_${st.addonId}_h_mm`)?.value) || 0;
+          const sqMeters = (wMm / 1000) * (hMm / 1000);
+          if (chk && chk.checked && sqMeters > 0) {
+            st.qty = Math.max(0, Math.round((st.qty - sqMeters * qty) * 1000) / 1000);
+            deductedCount++;
+          }
+          return;
+        }
+
+        const prefix = st.addonId ? `addon_${st.addonId}` : `addon_st_${st.id}`;
+        const chk = $(`${prefix}_chk`);
+        const used = parseFloat($(`${prefix}_used`)?.value) || 0;
+        if (chk && chk.checked && used > 0) {
+          st.qty = Math.max(0, Math.round((st.qty - used * qty) * 100) / 100);
+          deductedCount++;
+        }
+      });
+
+      if (deductedCount === 0) {
+        showToast('Нечего списывать (проверьте галочки допов)');
+        return;
+      }
+
+      saveStockToLocal();
+      updateLowStockBadge();
+      scheduleAutoSync();
+      showToast(`Списано со склада позиций: ${deductedCount} (на ${qty} шт)`);
+    }
+
+    function cancelEditingMode() {
+      editingItemId = null;
+      $('editingBanner').classList.add('hidden');
+      $('saveCatalogBtnText').textContent = '💾 Сохранить в каталог';
+      $('saveAsNewBtn').classList.add('hidden');
+    }
+
+    function resetCalculatorForm() {
+      if (!confirm('Очистить текущий расчет? (Закупочные цены со склада останутся)')) return;
+      cancelEditingMode();
+      $('itemTitle').value = ''; $('itemNotes').value = ''; $('batchQuantity').value = 1;
+      setTaxRate(0);
+      removePhoto();
+      const avail = getAvailableFilaments();
+      const first = avail[0] || { id: 'pla_matte_1', name: 'PLA матовый — Белый', spoolPrice: 1500 };
+      filamentsState = [{ id: 1, stockId: first.id, material: first.name, color: '', weight: 80, spoolPrice: first.spoolPrice, spoolWeight: 1000, hours: 2, minutes: 30 }];
+      renderFilaments();
+      document.querySelectorAll('.addon-trigger').forEach(chk => chk.checked = false);
+      recalculate(); showToast('Поля очищены');
+    }
+
+    function attachListeners() {
+      $('marginMultiplier').addEventListener('input', () => { $('marginMultiplierVal').textContent = `x${parseFloat($('marginMultiplier').value).toFixed(1)}`; recalculate(); });
+      $('wastePercent').addEventListener('input', () => { $('wastePercentVal').textContent = `${$('wastePercent').value}%`; recalculate(); });
+      ['printHours', 'printMinutes', 'machineHourlyRate', 'prepTime', 'laborTime', 'laborRate', 'minOrderPrice', 'roundingStep', 'batchQuantity'].forEach(id => {
+        $(id).addEventListener('input', recalculate); $(id).addEventListener('change', recalculate);
+      });
+      document.querySelectorAll('.addon-trigger, .addon-input').forEach(el => { el.addEventListener('input', recalculate); el.addEventListener('change', recalculate); });
+      document.querySelectorAll('.addon-persist, .persist-rate').forEach(el => { el.addEventListener('input', savePersistedAddonPrices); el.addEventListener('change', savePersistedAddonPrices); });
+    }
+
+    // ==================== СКЛАД И ЗАКУПКИ ====================
+    function loadDeletedStockIds() {
+      try { deletedStockIds = JSON.parse(localStorage.getItem(DELETED_STOCK_KEY)) || []; } catch { deletedStockIds = []; }
+    }
+
+    function saveDeletedStockIds() {
+      localStorage.setItem(DELETED_STOCK_KEY, JSON.stringify(deletedStockIds));
+    }
+
+    function initStockData() {
+      loadDeletedStockIds();
+      const baseList = buildDefaultStockItems().filter(def => !deletedStockIds.includes(def.id));
+      try {
+        const savedStock = JSON.parse(localStorage.getItem(STOCK_KEY));
+        if (Array.isArray(savedStock) && savedStock.length > 0) {
+          const map = new Map();
+          savedStock.forEach(i => {
+            if (!deletedStockIds.includes(i.id)) {
+              i.category = normalizeStockCategory(i);
+              map.set(i.id, i);
+            }
+          });
+          baseList.forEach(def => { if (!map.has(def.id)) map.set(def.id, def); });
+          stockItems = Array.from(map.values());
+        } else {
+          stockItems = baseList;
+        }
+      } catch {
+        stockItems = baseList;
+      }
+
+      try {
+        purchaseHistory = JSON.parse(localStorage.getItem(PURCHASES_KEY)) || [];
+      } catch {
+        purchaseHistory = [];
+      }
+      updateLowStockBadge();
+    }
+
+    function saveStockToLocal() {
+      localStorage.setItem(STOCK_KEY, JSON.stringify(stockItems));
+      localStorage.setItem(PURCHASES_KEY, JSON.stringify(purchaseHistory));
+    }
+
+    function updateLowStockBadge() {
+      const lowCount = stockItems.filter(s => s.qty > 0 && s.qty <= (s.minQty || 0)).length;
+      const badge = $('lowStockBadge');
+      if (lowCount > 0) {
+        badge.textContent = lowCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function toggleAllStockGroups(openState) {
+      document.querySelectorAll('.stock-group-details').forEach(d => { d.open = openState; });
+    }
+
+    function insertStockItemIntoCategory(newItem) {
+      const cat = normalizeStockCategory(newItem);
+      newItem.category = cat;
+      let insertIndex = -1;
+      for (let i = 0; i < stockItems.length; i++) {
+        if (normalizeStockCategory(stockItems[i]) === cat) {
+          const isBlankSlot = stockItems[i].name.trim().endsWith('—') && stockItems[i].qty === 0 && !stockItems[i].photo;
+          if (!isBlankSlot) {
+            insertIndex = i + 1;
+          } else if (insertIndex === -1) {
+            insertIndex = i;
+            break;
+          }
+        }
+      }
+      if (insertIndex !== -1) {
+        stockItems.splice(insertIndex, 0, newItem);
+      } else {
+        stockItems.push(newItem);
+      }
+    }
+
+    function quickAddRowToCategory(categoryKey, e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const isFil = isFilamentCategory(categoryKey);
+      let defaultPrefix = '';
+      if (categoryKey === 'Филаменты PLA матовый') defaultPrefix = 'PLA матовый — ';
+      else if (categoryKey === 'Филаменты PLA шелк') defaultPrefix = 'PLA шелк — ';
+      else if (categoryKey === 'Филаменты PETG') defaultPrefix = 'PETG — ';
+      else if (categoryKey === 'Филамент Carbon') defaultPrefix = 'Carbon — ';
+
+      const newItem = {
+        id: 'row_' + Date.now(),
+        name: defaultPrefix,
+        matName: isFil ? defaultPrefix : undefined,
+        category: categoryKey,
+        unit: isFil ? 'г' : 'шт',
+        qty: 0,
+        unitPrice: isFil ? 1.5 : 0,
+        minQty: isFil ? 200 : 5,
+        photo: ''
+      };
+
+      insertStockItemIntoCategory(newItem);
+      saveStockToLocal();
+      renderStockAndPurchases();
+      renderDynamicCustomStockAddons();
+      scheduleAutoSync();
+
+      setTimeout(() => {
+        const det = document.querySelector(`.stock-group-details[data-group-key="${categoryKey}"]`);
+        if (det) det.open = true;
+        const inp = $(`stockNameInput_${newItem.id}`);
+        if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+      }, 30);
+    }
+
+    function updateStockItemName(id, newName) {
+      const item = stockItems.find(s => s.id === id);
+      if (!item) return;
+      item.name = newName;
+      if (isFilamentCategory(normalizeStockCategory(item))) {
+        item.matName = newName.trim();
+        filamentsState.forEach(f => {
+          if (f.stockId === item.id) f.material = newName.trim();
+        });
+      }
+      saveStockToLocal();
+      renderDynamicCustomStockAddons();
+      renderFilaments();
+      scheduleAutoSync();
+    }
+
+    function triggerQuickStockPhoto(stockId) {
+      quickPhotoTargetStockId = stockId;
+      $('quickStockPhotoInput').value = '';
+      $('quickStockPhotoInput').click();
+    }
+
+    function removeStockItemPhoto(stockId, e) {
+      if (e) e.stopPropagation();
+      const item = stockItems.find(s => s.id === stockId);
+      if (!item) return;
+      item.photo = '';
+      saveStockToLocal();
+      renderStockAndPurchases();
+      renderFilaments();
+      scheduleAutoSync();
+      showToast('Картинка удалена');
+    }
+
+    function deleteStockItemRow(stockId) {
+      const item = stockItems.find(s => s.id === stockId);
+      if (!item) return;
+      const label = item.name.trim() || 'эту строку';
+      if (!confirm(`Удалить строку «${label}» со склада?`)) return;
+
+      if (!deletedStockIds.includes(stockId)) {
+        deletedStockIds.push(stockId);
+        saveDeletedStockIds();
+      }
+      stockItems = stockItems.filter(s => s.id !== stockId);
+      saveStockToLocal();
+      updateLowStockBadge();
+      renderStockAndPurchases();
+      renderDynamicCustomStockAddons();
+      renderFilaments();
+      recalculate();
+      scheduleAutoSync();
+      showToast('Строка удалена');
+    }
+
+    $('quickStockPhotoInput').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file || !quickPhotoTargetStockId) return;
+      const item = stockItems.find(s => s.id === quickPhotoTargetStockId);
+      if (!item) return;
+      item.photo = await compressImage(file, 180, 0.72);
+      saveStockToLocal();
+      renderStockAndPurchases();
+      renderFilaments();
+      scheduleAutoSync();
+      showToast(`Картинка для «${item.name.trim() || 'позиции'}» сохранена!`);
+    });
+
+    function populateMonthFilter() {
+      const sel = $('stockMonthFilter');
+      if (!sel) return;
+      const currentVal = sel.value;
+      const monthsSet = new Set();
+      const nowYM = new Date().toISOString().slice(0, 7);
+      monthsSet.add(nowYM);
+      purchaseHistory.forEach(p => { if (p.date) monthsSet.add(p.date.slice(0, 7)); });
+
+      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+      const sorted = Array.from(monthsSet).sort().reverse();
+      sel.innerHTML = `<option value="ALL">За всё время</option>` + sorted.map(ym => {
+        const [y, m] = ym.split('-');
+        return `<option value="${ym}">${monthNames[parseInt(m, 10) - 1]} ${y}</option>`;
+      }).join('');
+      sel.value = currentVal && (currentVal === 'ALL' || sorted.includes(currentVal)) ? currentVal : nowYM;
+    }
+
+    function renderStockAndPurchases() {
+      populateMonthFilter();
+      const monthFilter = $('stockMonthFilter').value;
+      const search = ($('stockSearchInput')?.value || '').toLowerCase().trim();
+      const onlyLow = $('onlyLowStockChk')?.checked || false;
+
+      const openMap = {};
+      document.querySelectorAll('.stock-group-details').forEach(d => {
+        if (d.dataset.groupKey) openMap[d.dataset.groupKey] = d.open;
+      });
+
+      const container = $('stockGroupedContainer');
+      container.innerHTML = '';
+
+      STOCK_GROUPS_ORDER.forEach(grp => {
+        const itemsInGroup = stockItems.filter(s => {
+          const cat = normalizeStockCategory(s);
+          if (cat !== grp.key) return false;
+          const matchSearch = !search || s.name.toLowerCase().includes(search);
+          const matchLow = !onlyLow || (s.qty <= (s.minQty || 0));
+          return matchSearch && matchLow;
+        });
+
+        if (itemsInGroup.length === 0 && (search || onlyLow)) return;
+
+        const lowInGroup = itemsInGroup.filter(s => s.qty > 0 && s.qty <= (s.minQty || 0)).length;
+        const isOpen = (search || onlyLow) ? true : (openMap[grp.key] !== undefined ? openMap[grp.key] : grp.defaultOpen);
+        const isFilGrp = isFilamentCategory(grp.key);
+
+        const rowsHtml = itemsInGroup.length === 0
+          ? `<div class="text-center py-4 text-xs text-slate-500">В этой группе пока нет строк. Нажмите «+ Строка», чтобы добавить.</div>`
+          : itemsInGroup.map((s, idx) => {
+          const isLow = s.qty > 0 && s.qty <= (s.minQty || 0);
+          const isEmpty = s.qty <= 0;
+
+          const itemPurchases = purchaseHistory.filter(p => p.itemId === s.id).sort((a, b) => b.id - a.id);
+          let trendHtml = '';
+          if (itemPurchases.length >= 2) {
+            const last = itemPurchases[0].unitPrice, prev = itemPurchases[1].unitPrice;
+            if (prev > 0 && last !== prev) {
+              const diffPct = Math.round(((last - prev) / prev) * 100);
+              trendHtml = diffPct > 0
+                ? `<span class="text-[10px] text-red-400 font-bold ml-1">+${diffPct}%</span>`
+                : `<span class="text-[10px] text-emerald-400 font-bold ml-1">${diffPct}%</span>`;
+            }
+          }
+
+          const priceFormatted = s.unitPrice > 0 ? (s.unitPrice < 10 ? s.unitPrice.toFixed(2) : Math.round(s.unitPrice)) : '0';
+          const spoolPriceFormatted = isFilGrp && s.unitPrice > 0 ? `${Math.round(s.unitPrice * 1000)} ₽/кг` : '';
+          const qtyColor = isEmpty ? 'text-slate-500' : (isLow ? 'text-red-400' : 'text-white');
+
+          const photoThumb = s.photo
+            ? `<div class="relative w-8 h-8 flex-shrink-0 group/ph">
+                 <img src="${s.photo}" onclick="triggerQuickStockPhoto('${s.id}')" title="Нажмите, чтобы сменить фото" class="w-8 h-8 rounded-lg object-cover border border-slate-700 hover:border-[#ff5b00] cursor-pointer transition">
+                 <button type="button" onclick="removeStockItemPhoto('${s.id}', event)" title="Убрать фото" class="hidden group-hover/ph:flex absolute -top-1.5 -right-1.5 bg-red-600 hover:bg-red-500 text-white rounded-full w-4 h-4 text-[9px] items-center justify-center shadow">✕</button>
+               </div>`
+            : `<button type="button" onclick="triggerQuickStockPhoto('${s.id}')" title="Добавить картинку цвета" class="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-dashed border-slate-700 hover:border-[#ff5b00] text-slate-500 hover:text-orange-400 flex items-center justify-center text-xs flex-shrink-0 transition">📷</button>`;
+
+          return `
+            <div class="grid grid-cols-12 gap-2 items-center py-2 px-3 rounded-xl hover:bg-slate-900/80 border-b border-slate-900/80 last:border-0 text-xs transition">
+              <div class="col-span-12 sm:col-span-5 flex items-center gap-2">
+                <span class="text-[10px] font-mono text-slate-500 w-5 text-right flex-shrink-0">${idx + 1}.</span>
+                ${photoThumb}
+                <div class="min-w-0 flex-1">
+                  <input id="stockNameInput_${s.id}" type="text" value="${s.name.replace(/"/g, '&quot;')}" oninput="updateStockItemName('${s.id}', this.value)" placeholder="Впишите название / цвет..." class="w-full bg-slate-900/70 hover:bg-slate-900 focus:bg-slate-900 border border-transparent focus:border-[#ff5b00] rounded-lg px-2 py-1 font-semibold text-slate-100 text-xs focus:outline-none transition">
+                  ${spoolPriceFormatted ? `<span class="text-[10px] text-slate-400 font-mono block px-2">Катушка 1 кг: <strong class="text-slate-200">${spoolPriceFormatted}</strong></span>` : ''}
+                </div>
+              </div>
+
+              <div class="col-span-4 sm:col-span-2 font-mono pl-7 sm:pl-0">
+                <span class="text-[10px] text-slate-500 sm:hidden block">Остаток:</span>
+                <span class="font-bold ${qtyColor}">${s.qty}</span> <span class="text-slate-400 text-[11px]">${s.unit}</span>
+              </div>
+
+              <div class="col-span-4 sm:col-span-2 font-mono">
+                <span class="text-[10px] text-slate-500 sm:hidden block">Цена:</span>
+                <span class="font-bold text-[#ff5b00]">${priceFormatted} ₽/${s.unit}</span>${trendHtml}
+              </div>
+
+              <div class="col-span-4 sm:col-span-3 flex items-center justify-end gap-1">
+                <button type="button" onclick="openPurchaseModal('${s.id}')" class="bg-[#ff5b00]/15 hover:bg-[#ff5b00] text-[#ff5b00] hover:text-white border border-[#ff5b00]/30 px-2 py-1.5 rounded-lg text-[11px] font-bold transition whitespace-nowrap">+ Закупка</button>
+                <button type="button" onclick="adjustStockManual('${s.id}', -1)" title="Списать 1 ${s.unit}" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-1.5 py-1.5 rounded-lg text-[11px] font-bold">−1</button>
+                <button type="button" onclick="editStockQtyPrompt('${s.id}')" title="Изменить остаток вручную" class="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 px-1.5 py-1.5 rounded-lg text-[11px]">✏️</button>
+                <button type="button" onclick="deleteStockItemRow('${s.id}')" title="Удалить строку со склада" class="bg-slate-900 hover:bg-red-950/70 text-slate-500 hover:text-red-400 border border-slate-800 px-1.5 py-1.5 rounded-lg text-[11px]">🗑</button>
+              </div>
+            </div>`;
+        }).join('');
+
+        const details = document.createElement('details');
+        details.className = "stock-group-details bg-slate-950 border border-slate-800/90 rounded-2xl overflow-hidden group shadow-md";
+        details.dataset.groupKey = grp.key;
+        if (isOpen) details.open = true;
+
+        details.innerHTML = `
+          <summary class="px-4 py-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900/70 transition list-none select-none gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-xs sm:text-sm text-white">${grp.title}</span>
+              <span class="bg-slate-900 text-slate-400 border border-slate-800 text-[10px] font-mono px-2 py-0.5 rounded-full">${itemsInGroup.length} поз.</span>
+              ${lowInGroup > 0 ? `<span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">мало: ${lowInGroup}</span>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="quickAddRowToCategory('${grp.key}', event)" class="bg-slate-900 hover:bg-[#ff5b00] text-orange-400 hover:text-white border border-slate-700 hover:border-[#ff5b00] px-2.5 py-1 rounded-lg text-[11px] font-bold transition">+ Строка</button>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </div>
+          </summary>
+          <div class="border-t border-slate-900 px-2 py-1.5 bg-slate-950/60">
+            <div class="hidden sm:grid grid-cols-12 gap-2 px-3 py-1.5 text-[10px] uppercase tracking-wider font-bold text-slate-500 border-b border-slate-900">
+              <div class="col-span-5">№ • Фото • Название / цвет</div>
+              <div class="col-span-2">В наличии</div>
+              <div class="col-span-2">Цена за ед.</div>
+              <div class="col-span-3 text-right">Действия</div>
+            </div>
+            ${rowsHtml}
+          </div>
+        `;
+        container.appendChild(details);
+      });
+
+      if (container.innerHTML === '') {
+        container.innerHTML = `<div class="text-center py-10 text-xs text-slate-500 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">Ничего не найдено по вашему фильтру</div>`;
+      }
+
+      const warehouseTotal = stockItems.reduce((acc, s) => acc + ((s.qty || 0) * (s.unitPrice || 0)), 0);
+      $('totalWarehouseValue').textContent = `${Math.round(warehouseTotal).toLocaleString('ru-RU')} ₽`;
+
+      const filteredPurchases = purchaseHistory.filter(p => monthFilter === 'ALL' || (p.date && p.date.startsWith(monthFilter)));
+      const monthSpend = filteredPurchases.reduce((acc, p) => acc + (p.totalCost || 0), 0);
+      $('monthlySpendTotal').textContent = `${Math.round(monthSpend).toLocaleString('ru-RU')} ₽`;
+      $('monthlyPurchasesCount').textContent = `Закупок за период: ${filteredPurchases.length}`;
+
+      const histList = $('purchasesHistoryList');
+      if (filteredPurchases.length === 0) {
+        histList.innerHTML = `<div class="text-center py-8 text-xs text-slate-500 bg-slate-950/60 rounded-2xl border border-dashed border-slate-800">За выбранный период закупок пока нет. Нажмите «+ Внести закупку», чтобы добавить чек.</div>`;
+        return;
+      }
+
+      histList.innerHTML = filteredPurchases.sort((a, b) => b.id - a.id).map(p => {
+        const unitP = p.unitPrice < 10 ? p.unitPrice.toFixed(2) : Math.round(p.unitPrice);
+        const stObj = stockItems.find(x => x.id === p.itemId);
+        const thumb = stObj && stObj.photo ? `<img src="${stObj.photo}" class="w-8 h-8 rounded-lg object-cover border border-slate-800 flex-shrink-0">` : '';
+        return `
+          <div class="bg-slate-950 border border-slate-800/90 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2.5">
+              ${thumb}
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-white">${p.itemName}</span>
+                  <span class="text-[10px] bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-lg">${p.date}</span>
+                  ${p.supplier ? `<span class="text-[10px] bg-[#ff5b00]/15 text-[#ff5b00] px-2 py-0.5 rounded-lg font-bold">${p.supplier}</span>` : ''}
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  Куплено: <strong class="text-slate-200">${p.qty} ${p.unit}</strong> • Цена: <strong class="text-[#ff5b00] font-mono">${unitP} ₽/${p.unit}</strong>${p.unit === 'г' ? ` (${Math.round(p.unitPrice * 1000)} ₽/кг)` : ''}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="font-black text-sm text-white font-mono">${Math.round(p.totalCost).toLocaleString('ru-RU')} ₽</span>
+              <button type="button" onclick="deletePurchaseRecord(${p.id})" title="Удалить запись" class="text-slate-600 hover:text-red-400 text-xs">✕</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    $('purchPhotoInput').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      purchPhotoBase64 = await compressImage(file, 180, 0.72);
+      purchPhotoCleared = false;
+      $('purchPhotoPreview').src = purchPhotoBase64;
+      $('purchPhotoPreview').classList.remove('hidden');
+      $('purchPhotoEmpty').classList.add('hidden');
+      $('purchRemovePhotoBtn').classList.remove('hidden');
+    });
+
+    function clearPurchaseModalPhoto() {
+      purchPhotoBase64 = '';
+      purchPhotoCleared = true;
+      $('purchPhotoInput').value = '';
+      $('purchPhotoPreview').src = '';
+      $('purchPhotoPreview').classList.add('hidden');
+      $('purchPhotoEmpty').classList.remove('hidden');
+      $('purchRemovePhotoBtn').classList.add('hidden');
+    }
+
+    function openPurchaseModal(preselectId = null) {
+      const sel = $('purchItemId');
+      const createOpt = `<option value="__NEW__">➕ Создать новую позицию / товар...</option>`;
+      const groupsOpts = STOCK_GROUPS_ORDER.map(grp => {
+        const items = stockItems.filter(s => normalizeStockCategory(s) === grp.key);
+        if (!items.length) return '';
+        return `<optgroup label="${grp.title}">${items.map((s, idx) => `<option value="${s.id}">${idx + 1}. ${s.name.trim() || 'Новая строка'} (остаток: ${s.qty} ${s.unit})</option>`).join('')}</optgroup>`;
+      }).join('');
+
+      sel.innerHTML = createOpt + groupsOpts;
+
+      if (preselectId) {
+        sel.value = preselectId;
+      } else {
+        const firstExisting = stockItems[0];
+        sel.value = firstExisting ? firstExisting.id : '__NEW__';
+      }
+
+      $('purchDate').value = new Date().toISOString().slice(0, 10);
+      $('purchTotalCost').value = '';
+      $('purchSupplier').value = 'AliExpress';
+      $('purchNewName').value = '';
+      purchPhotoBase64 = '';
+      purchPhotoCleared = false;
+      $('purchPhotoInput').value = '';
+      onPurchaseItemSelect();
+      $('purchaseModal').classList.remove('hidden');
+    }
+
+    function closePurchaseModal() { $('purchaseModal').classList.add('hidden'); }
+
+    function onPurchNewCategoryChange() {
+      const cat = $('purchNewCategory').value;
+      $('purchNewUnit').value = isFilamentCategory(cat) ? 'г' : 'шт';
+      onPurchNewUnitChange();
+    }
+
+    function onPurchNewUnitChange() {
+      const u = $('purchNewUnit').value;
+      $('purchUnitLabel').textContent = u;
+      $('purchUnitLabel2').textContent = u;
+      $('purchQty').value = u === 'г' ? '1000' : '';
+      updatePurchasePreview();
+    }
+
+    function onPurchaseItemSelect() {
+      const val = $('purchItemId').value;
+      const isNew = val === '__NEW__';
+      $('purchCreateNewBox').classList.toggle('hidden', !isNew);
+
+      if (isNew) {
+        $('purchNewCategory').value = 'Брелоки и NFC';
+        onPurchNewCategoryChange();
+        clearPurchaseModalPhoto();
+        purchPhotoCleared = false;
+        return;
+      }
+
+      const item = stockItems.find(s => s.id === val);
+      if (!item) return;
+      $('purchUnitLabel').textContent = item.unit;
+      $('purchUnitLabel2').textContent = item.unit;
+      $('purchQty').value = item.unit === 'г' ? '1000' : '';
+
+      if (item.photo && !purchPhotoBase64 && !purchPhotoCleared) {
+        $('purchPhotoPreview').src = item.photo;
+        $('purchPhotoPreview').classList.remove('hidden');
+        $('purchPhotoEmpty').classList.add('hidden');
+        $('purchRemovePhotoBtn').classList.remove('hidden');
+      } else if (!purchPhotoBase64) {
+        $('purchPhotoPreview').classList.add('hidden');
+        $('purchPhotoEmpty').classList.remove('hidden');
+        $('purchRemovePhotoBtn').classList.add('hidden');
+      }
+      updatePurchasePreview();
+    }
+
+    function updatePurchasePreview() {
+      const val = $('purchItemId').value;
+      const isNew = val === '__NEW__';
+      const item = isNew ? null : stockItems.find(s => s.id === val);
+      const unit = isNew ? $('purchNewUnit').value : (item ? item.unit : 'шт');
+      const qty = parseFloat($('purchQty').value) || 0;
+      const total = parseFloat($('purchTotalCost').value) || 0;
+      const newUnit = qty > 0 ? total / qty : 0;
+      $('purchUnitPricePreview').textContent = `${newUnit < 10 ? newUnit.toFixed(2) : Math.round(newUnit)} ₽`;
+      $('purchSpoolPreview').textContent = (unit === 'г' && newUnit > 0) ? `Катушка 1 кг = ${Math.round(newUnit * 1000)} ₽` : '';
+
+      const diffBadge = $('purchPriceDiffBadge');
+      if (item && item.unitPrice > 0 && newUnit > 0) {
+        const diff = newUnit - item.unitPrice;
+        const pct = Math.round((diff / item.unitPrice) * 100);
+        if (Math.abs(pct) >= 1) {
+          diffBadge.innerHTML = diff > 0
+            ? `<span class="text-red-400 font-bold">Было: ${item.unitPrice.toFixed(2)} ₽<br>Подорожало на +${pct}%</span>`
+            : `<span class="text-emerald-400 font-bold">Было: ${item.unitPrice.toFixed(2)} ₽<br>Дешевле на ${pct}%</span>`;
+        } else {
+          diffBadge.innerHTML = `<span class="text-slate-400">Цена без изменений</span>`;
+        }
+      } else {
+        diffBadge.innerHTML = '';
+      }
+    }
+
+    function submitPurchase() {
+      const val = $('purchItemId').value;
+      const qty = parseFloat($('purchQty').value) || 0;
+      const totalCost = parseFloat($('purchTotalCost').value) || 0;
+      if (qty <= 0 || totalCost <= 0) {
+        showToast('Укажите количество и сумму покупки');
+        return;
+      }
+
+      const unitPrice = totalCost / qty;
+      let item = null;
+
+      if (val === '__NEW__') {
+        const newName = $('purchNewName').value.trim();
+        if (!newName) {
+          showToast('Введите название нового товара');
+          return;
+        }
+        const cat = $('purchNewCategory').value;
+        const unit = $('purchNewUnit').value;
+        item = {
+          id: 'custom_' + Date.now(),
+          name: newName,
+          matName: isFilamentCategory(cat) ? newName : undefined,
+          category: cat,
+          unit,
+          qty,
+          unitPrice,
+          minQty: isFilamentCategory(cat) ? 200 : 5,
+          photo: purchPhotoBase64 || ''
+        };
+        insertStockItemIntoCategory(item);
+      } else {
+        item = stockItems.find(s => s.id === val);
+        if (!item) return;
+        item.qty = Math.round((item.qty + qty) * 100) / 100;
+        item.unitPrice = unitPrice;
+        if (purchPhotoCleared) {
+          item.photo = '';
+        } else if (purchPhotoBase64) {
+          item.photo = purchPhotoBase64;
+        }
+      }
+
+      purchaseHistory.unshift({
+        id: Date.now(),
+        itemId: item.id,
+        itemName: item.name.trim(),
+        unit: item.unit,
+        qty,
+        totalCost,
+        unitPrice,
+        date: $('purchDate').value || new Date().toISOString().slice(0, 10),
+        supplier: $('purchSupplier').value
+      });
+
+      saveStockToLocal();
+      syncStockPricesToCalculator();
+      updateLowStockBadge();
+      renderStockAndPurchases();
+      closePurchaseModal();
+      scheduleAutoSync();
+      showToast(`Закупка записана (${$('purchSupplier').value})!`);
+    }
+
+    function deletePurchaseRecord(id) {
+      if (!confirm('Удалить эту запись о закупке из журнала?')) return;
+      purchaseHistory = purchaseHistory.filter(p => p.id !== id);
+      saveStockToLocal();
+      renderStockAndPurchases();
+      scheduleAutoSync();
+    }
+
+    function adjustStockManual(id, delta) {
+      const item = stockItems.find(s => s.id === id);
+      if (!item) return;
+      item.qty = Math.max(0, Math.round((item.qty + delta) * 100) / 100);
+      saveStockToLocal();
+      updateLowStockBadge();
+      renderStockAndPurchases();
+      scheduleAutoSync();
+    }
+
+    function editStockQtyPrompt(id) {
+      const item = stockItems.find(s => s.id === id);
+      if (!item) return;
+      const val = prompt(`Введите точный остаток на складе для «${item.name.trim()}» (${item.unit}):`, item.qty);
+      if (val !== null && !isNaN(parseFloat(val))) {
+        item.qty = Math.max(0, parseFloat(val));
+        saveStockToLocal();
+        updateLowStockBadge();
+        renderStockAndPurchases();
+        scheduleAutoSync();
+        showToast('Остаток обновлен');
+      }
+    }
+
+    $('newStockPhotoInput').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      newStockPhotoBase64 = await compressImage(file, 180, 0.72);
+      $('newStockPhotoPreview').src = newStockPhotoBase64;
+      $('newStockPhotoPreview').classList.remove('hidden');
+      $('newStockPhotoEmpty').classList.add('hidden');
+      $('newStockRemovePhotoBtn').classList.remove('hidden');
+    });
+
+    function clearNewStockPhoto() {
+      newStockPhotoBase64 = '';
+      $('newStockPhotoInput').value = '';
+      $('newStockPhotoPreview').src = '';
+      $('newStockPhotoPreview').classList.add('hidden');
+      $('newStockPhotoEmpty').classList.remove('hidden');
+      $('newStockRemovePhotoBtn').classList.add('hidden');
+    }
+
+    function onNewStockNameInput() {
+      const val = $('newStockName').value.toLowerCase();
+      if (val.includes('шелк') || val.includes('шёлк') || val.includes('silk')) {
+        $('newStockCategory').value = 'Филаменты PLA шелк';
+        onNewStockCategoryChange();
+      } else if (val.includes('матовый') || val.includes('мрамор') || (val.includes('pla') && !val.includes('petg'))) {
+        $('newStockCategory').value = 'Филаменты PLA матовый';
+        onNewStockCategoryChange();
+      } else if (val.includes('petg')) {
+        $('newStockCategory').value = 'Филаменты PETG';
+        onNewStockCategoryChange();
+      } else if (val.includes('карбон') || val.includes('carbon')) {
+        $('newStockCategory').value = 'Филамент Carbon';
+        onNewStockCategoryChange();
+      }
+    }
+
+    function onNewStockCategoryChange() {
+      const cat = $('newStockCategory').value;
+      if (isFilamentCategory(cat)) {
+        $('newStockUnit').value = 'г';
+        if (!$('newStockQty').value || $('newStockQty').value === '0') $('newStockQty').value = '1000';
+        $('newStockMin').value = '200';
+      } else {
+        $('newStockUnit').value = 'шт';
+        $('newStockQty').value = '0';
+        $('newStockMin').value = '5';
+      }
+      onNewStockUnitChange();
+    }
+
+    function onNewStockUnitChange() {
+      const unit = $('newStockUnit').value;
+      $('newStockQtyUnitLabel').textContent = unit;
+      $('newStockPriceLabel').textContent = unit === 'г' ? 'Цена катушки 1кг (₽):' : `Цена за 1 ${unit} (₽):`;
+    }
+
+    function openNewStockItemModal(presetCat = null) {
+      clearNewStockPhoto();
+      $('newStockName').value = '';
+      $('newStockPriceInput').value = '';
+      $('newStockCategory').value = presetCat || 'Брелоки и NFC';
+      onNewStockCategoryChange();
+      $('newStockModal').classList.remove('hidden');
+    }
+    function closeNewStockItemModal() { $('newStockModal').classList.add('hidden'); }
+
+    function createNewStockItem() {
+      const name = $('newStockName').value.trim();
+      if (!name) return showToast('Введите название позиции');
+      const cat = $('newStockCategory').value;
+      const unit = $('newStockUnit').value;
+      const rawPrice = parseFloat($('newStockPriceInput').value) || 0;
+      const unitPrice = (unit === 'г') ? (rawPrice / 1000) : rawPrice;
+
+      const newItem = {
+        id: 'custom_' + Date.now(),
+        name,
+        matName: isFilamentCategory(cat) ? name : undefined,
+        category: cat,
+        unit,
+        qty: parseFloat($('newStockQty').value) || 0,
+        unitPrice,
+        minQty: parseFloat($('newStockMin').value) || 5,
+        photo: newStockPhotoBase64
+      };
+
+      insertStockItemIntoCategory(newItem);
+      saveStockToLocal();
+      syncStockPricesToCalculator();
+      updateLowStockBadge();
+      renderStockAndPurchases();
+      closeNewStockItemModal();
+      scheduleAutoSync();
+      showToast(`«${name}» добавлен в группу «${cat}»!`);
+    }
+
+    // ==================== ЧЕК, КАТАЛОГ И ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ ====================
+    function buildClientReceiptText() {
+      const title = $('itemTitle').value.trim() || 'Изделие на заказ';
+      const qty = Math.max(1, parseInt($('batchQuantity').value) || 1);
+      const filInfo = filamentsState.map(f => `   • ${f.material}${f.color ? ` (${f.color})` : ''}: ~${f.weight} г`).join('\n');
+      const taxNote = currentTaxRate > 0 ? ` (включая налог ${currentTaxRate}%)` : '';
+      const priceBlock = qty > 1
+        ? `🏷 Цена за 1 шт${taxNote}: ${$('finalPriceDisplay').textContent} ₽\n📦 Количество: ${qty} шт\n💰 Итого за партию: ${$('batchPriceDisplay').textContent} ₽`
+        : `🏷 Стоимость${taxNote}: ${$('finalPriceDisplay').textContent} ₽`;
+      return `Здравствуйте! ✨\nРасчет заказа «${title}» (${$('itemCategory').value}):\n\n📐 Характеристики (на 1 шт):\n${filInfo}\n• Время печати 1 шт: ~${$('printHours').value || 0} ч ${$('printMinutes').value || 0} мин\n\n${priceBlock}\n\nС уважением, студия «Мягкие грани» 🌿`;
+    }
+
+    function openClientReceiptModal() { $('receiptTextarea').value = buildClientReceiptText(); $('receiptModal').classList.remove('hidden'); copyReceiptToClipboard(false); }
+    function closeClientReceiptModal() { $('receiptModal').classList.add('hidden'); }
+    function copyReceiptToClipboard(notify = true) { navigator.clipboard?.writeText($('receiptTextarea').value); if (notify) showToast('Чек скопирован!'); }
+    function sendReceiptToTelegram() { window.open(`https://t.me/share/url?url=&text=${encodeURIComponent($('receiptTextarea').value)}`, '_blank'); }
+    function sendReceiptToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent($('receiptTextarea').value)}`, '_blank'); }
+
+    function loadDeletedIds() { try { deletedIds = JSON.parse(localStorage.getItem(DELETED_IDS_KEY)) || []; } catch { deletedIds = []; } }
+    function saveDeletedIds() { localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(deletedIds)); }
+
+    function initDatabase() {
+      loadDeletedIds();
+      return new Promise(resolve => {
+        if (!window.indexedDB) { inMemoryCatalog = (JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]')).filter(it => !deletedIds.includes(it.id)); return resolve(); }
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains(STORE_NAME)) e.target.result.createObjectStore(STORE_NAME, { keyPath: 'id' }); };
+        req.onsuccess = async e => {
+          dbInstance = e.target.result;
+          inMemoryCatalog = (await loadAllFromIndexedDB()).filter(it => !deletedIds.includes(it.id));
+          if (inMemoryCatalog.length === 0) {
+            const loc = (JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]')).filter(it => !deletedIds.includes(it.id));
+            if (loc.length > 0) { inMemoryCatalog = loc; for (const it of loc) await putToIndexedDB(it); }
+          }
+          resolve();
+        };
+        req.onerror = () => { inMemoryCatalog = (JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]')).filter(it => !deletedIds.includes(it.id)); resolve(); };
+      });
+    }
+
+    function loadAllFromIndexedDB() {
+      return new Promise(resolve => {
+        if (!dbInstance) return resolve([]);
+        const req = dbInstance.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
+        req.onsuccess = () => resolve(req.result ? req.result.sort((a, b) => b.id - a.id) : []);
+        req.onerror = () => resolve([]);
+      });
+    }
+    function putToIndexedDB(item) {
+      return new Promise(resolve => {
+        if (!dbInstance) return resolve();
+        const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(item);
+        tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+      });
+    }
+    function deleteFromIndexedDB(id) {
+      return new Promise(resolve => {
+        if (!dbInstance) return resolve();
+        const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id);
+        tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+      });
+    }
+
+    function getStudioCode() { let c = localStorage.getItem(STUDIO_CODE_KEY); if (!c) { c = 'myagkie_grani'; localStorage.setItem(STUDIO_CODE_KEY, c); } return c; }
+    function setStudioCode(c) { if (c) { localStorage.setItem(STUDIO_CODE_KEY, c.trim()); syncNow(true); } }
+    function openSyncModal() { $('syncStudioCode').value = getStudioCode(); $('syncModal').classList.remove('hidden'); }
+    function closeSyncModal() { $('syncModal').classList.add('hidden'); }
+    function applyStudioCode() { const v = $('syncStudioCode').value.trim(); if (v) { setStudioCode(v); showToast('Код применен!'); closeSyncModal(); } }
+
+    function updateSyncStatusUI(status = 'ok', msg = '') {
+      $('syncStatusDot').className = status === 'syncing' ? "w-2 h-2 rounded-full bg-orange-400 animate-ping" : (status === 'error' ? "w-2 h-2 rounded-full bg-red-500" : "w-2 h-2 rounded-full bg-emerald-400 animate-pulse");
+      $('syncStatusText').textContent = status === 'error' ? 'Ошибка API' : `Код: ${getStudioCode()}`;
+      if (msg) $('syncDiagText').textContent = msg;
+    }
+
+    function scheduleAutoSync() { clearTimeout(autoSyncTimer); autoSyncTimer = setTimeout(() => syncPushCloud(false), 1200); }
+
+    async function syncPushCloud(manual = false) {
+      updateSyncStatusUI('syncing', 'Сохранение на сервер...');
+      try {
+        const payload = JSON.stringify({
+          code: getStudioCode(),
+          items: inMemoryCatalog,
+          deletedIds,
+          stockItems,
+          deletedStockIds,
+          purchaseHistory,
+          addonPrices: JSON.parse(localStorage.getItem(ADDON_PRICES_KEY) || '{}'),
+          spoolPrices: getSavedSpoolPrices(),
+          updated: Date.now()
+        });
+        const res = await fetch(`/api/sync?code=${encodeURIComponent(getStudioCode())}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+        updateSyncStatusUI('ok', `Синхронизировано в ${new Date().toLocaleTimeString('ru-RU')}`);
+        if (manual) showToast('Каталог и склад сохранены в облаке!');
+      } catch (err) {
+        updateSyncStatusUI('error', `Ошибка: ${err.message}`);
+        if (manual) showToast(`Ошибка: ${err.message}`);
+      }
+    }
+
+    async function syncPullCloud(manual = false) {
+      updateSyncStatusUI('syncing', 'Загрузка с сервера...');
+      try {
+        const res = await fetch(`/api/sync?code=${encodeURIComponent(getStudioCode())}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          if (Array.isArray(data.deletedIds)) { deletedIds = Array.from(new Set([...deletedIds, ...data.deletedIds])); saveDeletedIds(); }
+          if (Array.isArray(data.deletedStockIds)) { deletedStockIds = Array.from(new Set([...deletedStockIds, ...data.deletedStockIds])); saveDeletedStockIds(); }
+          if (Array.isArray(data.items)) {
+            const map = new Map();
+            inMemoryCatalog.forEach(it => { if (!deletedIds.includes(it.id)) map.set(it.id, it); });
+            data.items.forEach(cIt => {
+              if (deletedIds.includes(cIt.id)) return;
+              const lIt = map.get(cIt.id);
+              if (!lIt || (cIt.updatedAt || 0) > (lIt.updatedAt || 0)) map.set(cIt.id, cIt);
+            });
+            inMemoryCatalog = Array.from(map.values()).sort((a, b) => b.id - a.id);
+            for (const d of deletedIds) await deleteFromIndexedDB(d);
+            for (const it of inMemoryCatalog) await putToIndexedDB(it);
+            try { localStorage.setItem(CATALOG_KEY, JSON.stringify(inMemoryCatalog)); } catch {}
+          }
+          if (Array.isArray(data.stockItems) && data.stockItems.length > 0) {
+            const localMap = new Map(stockItems.filter(s => !deletedStockIds.includes(s.id)).map(s => [s.id, s]));
+            const mergedMap = new Map(localMap);
+            data.stockItems.forEach(s => {
+              if (deletedStockIds.includes(s.id)) return;
+              const loc = localMap.get(s.id);
+              mergedMap.set(s.id, { ...s, category: normalizeStockCategory(s), photo: s.photo !== undefined ? s.photo : (loc ? loc.photo : '') });
+            });
+            stockItems = Array.from(mergedMap.values());
+            localStorage.setItem(STOCK_KEY, JSON.stringify(stockItems));
+          }
+          if (Array.isArray(data.purchaseHistory)) {
+            const pMap = new Map();
+            purchaseHistory.forEach(p => pMap.set(p.id, p));
+            data.purchaseHistory.forEach(p => pMap.set(p.id, p));
+            purchaseHistory = Array.from(pMap.values()).sort((a, b) => b.id - a.id);
+            localStorage.setItem(PURCHASES_KEY, JSON.stringify(purchaseHistory));
+          }
+          if (data.addonPrices) {
+            localStorage.setItem(ADDON_PRICES_KEY, JSON.stringify({ ...data.addonPrices, ...JSON.parse(localStorage.getItem(ADDON_PRICES_KEY) || '{}') }));
+            if (!editingItemId) loadPersistedAddonPrices();
+          }
+          if (data.spoolPrices) localStorage.setItem(SPOOL_PRICES_KEY, JSON.stringify({ ...data.spoolPrices, ...getSavedSpoolPrices() }));
+          syncStockPricesToCalculator();
+          updateLowStockBadge();
+          renderCatalog();
+          renderStockAndPurchases();
+          updateCatalogBadge();
+          recalculate();
+        } else if (inMemoryCatalog.length > 0 || purchaseHistory.length > 0) {
+          await syncPushCloud(false);
+        }
+        updateSyncStatusUI('ok', `Подключено • ${new Date().toLocaleTimeString('ru-RU')}`);
+        if (manual) showToast('Каталог и склад синхронизированы!');
+      } catch (err) {
+        updateSyncStatusUI('error', `Ошибка: ${err.message}`);
+        if (manual) showToast(`Ошибка: ${err.message}`);
+      }
+    }
+
+    async function syncNow(manual = false) { await syncPullCloud(false); await syncPushCloud(manual); }
+    function updateCatalogBadge() { $('catalogCountBadge').textContent = inMemoryCatalog.length; }
+
+    async function saveCurrentItemToCatalog(forceNew = false) {
+      const title = $('itemTitle').value.trim() || 'Без названия';
+      const isUpdating = Boolean(editingItemId && !forceNew);
+      const itemId = isUpdating ? editingItemId : Date.now();
+      const item = {
+        id: itemId, updatedAt: Date.now(), title, category: $('itemCategory').value, notes: $('itemNotes').value.trim(),
+        price: $('finalPriceDisplay').textContent, batchPrice: $('batchPriceDisplay').textContent, batchQty: Math.max(1, parseInt($('batchQuantity').value) || 1),
+        taxRate: currentTaxRate,
+        cost: $('totalCostDisplay').textContent, photo: currentPhotoBase64, date: new Date().toLocaleDateString('ru-RU'),
+        filaments: JSON.parse(JSON.stringify(filamentsState)), printHours: $('printHours').value, printMinutes: $('printMinutes').value,
+        machineHourlyRate: $('machineHourlyRate').value, prepTime: $('prepTime').value, laborTime: $('laborTime').value, laborRate: $('laborRate').value,
+        wastePercent: $('wastePercent').value, marginMultiplier: $('marginMultiplier').value, minOrderPrice: $('minOrderPrice').value, roundingStep: $('roundingStep').value,
+        addonsSnapshot: getAddonsSnapshot()
+      };
+      if (isUpdating) {
+        const idx = inMemoryCatalog.findIndex(it => it.id === itemId);
+        if (idx !== -1) inMemoryCatalog[idx] = item; else inMemoryCatalog.unshift(item);
+      } else {
+        inMemoryCatalog.unshift(item);
+      }
+      await putToIndexedDB(item);
+      try { localStorage.setItem(CATALOG_KEY, JSON.stringify(inMemoryCatalog)); } catch {}
+      updateCatalogBadge(); renderCatalog();
+      showToast(isUpdating ? `Карточка «${title}» обновлена!` : `Товар «${title}» сохранен!`);
+      if (isUpdating || forceNew) cancelEditingMode();
+      syncPushCloud(false);
+    }
+
+    function renderCatalog() {
+      const grid = $('catalogGrid'), empty = $('catalogEmptyMsg');
+      const search = ($('catalogSearchInput')?.value || '').toLowerCase(), cat = $('catalogCategoryFilter')?.value || 'ALL';
+      const filtered = inMemoryCatalog.filter(it => (it.title.toLowerCase().includes(search) || (it.notes && it.notes.toLowerCase().includes(search))) && (cat === 'ALL' || it.category === cat));
+      grid.innerHTML = '';
+      if (filtered.length === 0) { empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      filtered.forEach(it => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col";
+        const taxPill = it.taxRate ? `<span class="text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono ml-1">+${it.taxRate}%</span>` : '';
+        card.innerHTML = `
+          <div class="relative">
+            ${it.photo ? `<img src="${it.photo}" class="w-full h-44 object-cover">` : `<div class="w-full h-44 bg-slate-950 flex items-center justify-center text-slate-600 text-xs">Без фото</div>`}
+            <button type="button" onclick="deleteCatalogItem(${it.id})" class="absolute top-2.5 right-2.5 bg-slate-950/85 hover:bg-red-600 text-slate-300 hover:text-white px-2.5 py-1 rounded-xl text-[11px] font-bold border border-slate-800">🗑 Удалить</button>
+          </div>
+          <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1"><span>${it.category}</span><span>${it.date}</span></div>
+              <h3 class="font-bold text-white text-base leading-snug">${it.title}</h3>
+              ${it.notes ? `<p class="text-xs text-slate-400 mt-1 line-clamp-2">${it.notes}</p>` : ''}
+            </div>
+            <div class="pt-3 border-t border-slate-800 flex items-end justify-between gap-2">
+              <div>
+                <span class="text-[10px] text-slate-500 block">Себест: ${it.cost} ${taxPill}</span>
+                <span class="text-lg font-black text-[#ff5b00]">${it.price} ₽ <span class="text-xs font-normal text-slate-400">/ шт</span></span>
+                ${it.batchQty > 1 ? `<span class="text-[10px] text-slate-400 block">Партия (${it.batchQty} шт): <strong class="text-white">${it.batchPrice} ₽</strong></span>` : ''}
+              </div>
+              <button type="button" onclick="restoreItemToCalc(${it.id})" class="bg-[#ff5b00]/15 hover:bg-[#ff5b00] text-[#ff5b00] hover:text-white border border-[#ff5b00]/30 px-3 py-1.5 rounded-xl text-xs font-bold">✏️ Изменить</button>
+            </div>
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    async function deleteCatalogItem(id) {
+      if (!confirm('Удалить карточку из каталога?')) return;
+      if (!deletedIds.includes(id)) { deletedIds.push(id); saveDeletedIds(); }
+      if (editingItemId === id) cancelEditingMode();
+      inMemoryCatalog = inMemoryCatalog.filter(it => it.id !== id);
+      await deleteFromIndexedDB(id);
+      try { localStorage.setItem(CATALOG_KEY, JSON.stringify(inMemoryCatalog)); } catch {}
+      updateCatalogBadge(); renderCatalog(); showToast('Удалено'); syncPushCloud(false);
+    }
+
+    function restoreItemToCalc(id) {
+      const it = inMemoryCatalog.find(x => x.id === id);
+      if (!it) return;
+      editingItemId = it.id;
+      $('editingBanner').classList.remove('hidden'); $('editingItemTitle').textContent = it.title;
+      $('saveCatalogBtnText').textContent = 'Обновить карточку в каталоге'; $('saveAsNewBtn').classList.remove('hidden');
+      $('itemTitle').value = it.title; $('itemCategory').value = it.category; $('itemNotes').value = it.notes || ''; $('batchQuantity').value = it.batchQty || 1;
+      setTaxRate(it.taxRate || 0);
+      if (it.photo) { currentPhotoBase64 = it.photo; $('photoPreviewImg').src = it.photo; $('photoPreviewContainer').classList.remove('hidden'); $('photoPlaceholder').classList.add('hidden'); } else removePhoto();
+      if (it.filaments?.length) filamentsState = JSON.parse(JSON.stringify(it.filaments));
+      renderFilaments();
+      renderDynamicCustomStockAddons();
+      ['printHours', 'printMinutes', 'machineHourlyRate', 'prepTime', 'laborTime', 'laborRate', 'wastePercent', 'marginMultiplier', 'minOrderPrice', 'roundingStep'].forEach(k => { if (it[k] !== undefined) $(k).value = it[k]; });
+      $('wastePercentVal').textContent = `${$('wastePercent').value}%`;
+      $('marginMultiplierVal').textContent = `x${parseFloat($('marginMultiplier').value).toFixed(1)}`;
+      if (it.addonsSnapshot) applyAddonsSnapshot(it.addonsSnapshot);
+      switchTab('calc'); recalculate(); window.scrollTo({ top: 0, behavior: 'smooth' }); showToast(`Редактирование: «${it.title}»`);
+    }
+
+    function exportCatalogToFile() {
+      const backup = { catalog: inMemoryCatalog, stockItems, purchaseHistory };
+      const a = document.createElement('a');
+      a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+      a.download = `Мягкие_Грани_База_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      showToast('Полная копия (каталог + склад) сохранена!');
+    }
+
+    function importCatalogFromFile(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const r = new FileReader();
+      r.onload = async ev => {
+        try {
+          const imp = JSON.parse(ev.target.result);
+          const list = Array.isArray(imp) ? imp : (imp.catalog || []);
+          const map = new Map();
+          inMemoryCatalog.forEach(it => map.set(it.id, it));
+          list.forEach(it => { deletedIds = deletedIds.filter(d => d !== it.id); map.set(it.id, it); });
+          saveDeletedIds();
+          inMemoryCatalog = Array.from(map.values()).sort((a, b) => b.id - a.id);
+          for (const it of inMemoryCatalog) await putToIndexedDB(it);
+          try { localStorage.setItem(CATALOG_KEY, JSON.stringify(inMemoryCatalog)); } catch {}
+          if (imp.stockItems) stockItems = imp.stockItems.map(s => ({ ...s, category: normalizeStockCategory(s) }));
+          if (imp.purchaseHistory) purchaseHistory = imp.purchaseHistory;
+          saveStockToLocal();
+          renderCatalog(); renderStockAndPurchases(); renderDynamicCustomStockAddons(); updateCatalogBadge(); syncPushCloud(false);
+          showToast('База успешно восстановлена!');
+        } catch { showToast('Ошибка чтения файла'); }
+      };
+      r.readAsText(file); e.target.value = '';
+    }
+
+    window.onload = async function() {
+      renderAddonRows();
+      initStockData();
+      loadPersistedAddonPrices();
+      syncStockPricesToCalculator();
+      renderFilaments();
+      attachListeners();
+      recalculate();
+      await initDatabase();
+      updateCatalogBadge();
+      await syncPullCloud(false);
+      setInterval(() => { if (!document.hidden) syncPullCloud(false); }, 25000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) syncPullCloud(false); });
+    };
+  </script>
+</body>
+</html>
