@@ -3,16 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Мягкие грани | Калькулятор, Каталог и Склад</title>
+  <title>Печать 360 СкладКалькулятор</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230b1424' stroke='%23ff5b00' stroke-width='1.5'/%3E%3Cpath d='M28 26 h8 v-8 h28 v8 h8 v7 h-8 v7 h-4 l-10 13 l-10 -13 h-4 v-7 h-8 z' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M46 53 a4 4 0 0 0 8 0 z' fill='%23ffffff'/%3E%3Cpath d='M34 68 Q 42 63, 50 68 T 66 68' fill='none' stroke='%23ff5b00' stroke-width='3.2' stroke-linecap='round'/%3E%3Cpath d='M31 73 Q 41 68, 50 73 T 69 73' fill='none' stroke='%23ff5b00' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23eef6fc' stroke='%232b95e6' stroke-width='3'/%3E%3Cpath d='M28 26 h8 v-8 h28 v8 h8 v7 h-8 v7 h-4 l-10 13 l-10 -13 h-4 v-7 h-8 z' fill='none' stroke='%230d2847' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cpath d='M46 53 a4 4 0 0 0 8 0 z' fill='%230d2847'/%3E%3Cpath d='M34 68 Q 42 63, 50 68 T 66 68' fill='none' stroke='%23f96302' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M31 73 Q 41 68, 50 73 T 69 73' fill='none' stroke='%232b95e6' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-    body { font-family: 'Montserrat', sans-serif; background-color: #080d1a; color: #f1f5f9; }
-    input[type=range]::-webkit-slider-thumb { appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #ff5b00; cursor: pointer; box-shadow: 0 0 10px rgba(255, 91, 0, 0.6); border: 2px solid #ffffff; }
+    body { font-family: 'Montserrat', sans-serif; background-color: #eef6fc !important; color: #0d2847 !important; }
+    input[type=range]::-webkit-slider-thumb { appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #f96302; cursor: pointer; box-shadow: 0 0 10px rgba(249, 99, 2, 0.45); border: 2px solid #ffffff; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     summary::-webkit-details-marker { display: none; }
+
+    /* Светлая тема «Печать 360» */
+    header { background-color: rgba(255, 255, 255, 0.92) !important; border-color: #cde3f5 !important; }
+    .bg-slate-900, .bg-slate-900\/90, .bg-slate-900\/70, .bg-slate-900\/40, .bg-gradient-to-br { background: #ffffff !important; }
+    .bg-slate-950, .bg-slate-950\/90, .bg-slate-950\/60, .bg-slate-950\/85 { background-color: #f4f9fe !important; }
+    .bg-slate-800 { background-color: #e6f2fc !important; color: #0d2847 !important; }
+    .bg-slate-800:hover { background-color: #d4e9fa !important; }
+    .border-slate-800, .border-slate-800\/80, .border-slate-800\/90, .border-slate-700, .border-slate-700\/80, .border-slate-900 { border-color: #cde3f5 !important; }
+
+    /* Текст: тёмно-синий вместо белого */
+    .text-white, .text-slate-100, .text-slate-200 { color: #0d2847 !important; }
+    .text-slate-300, .text-slate-400 { color: #3a5a78 !important; }
+    .text-slate-500, .text-slate-600 { color: #6482a0 !important; }
+    .text-emerald-400, .text-emerald-300 { color: #059669 !important; }
+    .text-amber-400, .text-amber-300\/90 { color: #d97706 !important; }
+
+    /* Белый текст на ярких кнопках и уведомлениях */
+    #toast, #toast *, .bg-\[\#ff5b00\], .bg-\[\#ff5b00\] *, .bg-gradient-to-r, .bg-gradient-to-r *, .bg-sky-600, .bg-emerald-600, .bg-red-600 { color: #ffffff !important; }
+    button.hover\:bg-\[\#ff5b00\]:hover, button.hover\:bg-red-600:hover { color: #ffffff !important; }
+    input:focus, select:focus { border-color: #2b95e6 !important; box-shadow: 0 0 0 2px rgba(43, 149, 230, 0.15); }
   </style>
+</head>
 </head>
 <body class="min-h-screen pb-20 selection:bg-[#ff5b00] selection:text-white">
 
@@ -26,15 +47,10 @@
   <!-- ШАПКА -->
   <header class="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-[#0b1424] border border-[#ff5b00]/30 flex items-center justify-center shadow-lg flex-shrink-0">
-          <svg class="w-7 h-7" viewBox="0 0 100 100">
-            <path d="M28 26 h8 v-8 h28 v8 h8 v7 h-8 v7 h-4 l-10 13 l-10 -13 h-4 v-7 h-8 z" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"/>
-            <path d="M46 53 a4 4 0 0 0 8 0 z" fill="#ffffff"/>
-            <path d="M34 68 Q 42 63, 50 68 T 66 68" fill="none" stroke="#ff5b00" stroke-width="3.5" stroke-linecap="round"/>
-            <path d="M31 73 Q 41 68, 50 73 T 69 73" fill="none" stroke="#ff5b00" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>
-        </div>
+      <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base sm:text-lg text-[#0d2847] tracking-tight">Печать 360</h1>
+            <span class="bg-[#2b95e6]/15 text-[#2b95e6] border border-[#2b95e6]/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">СкладКалькулятор</span>
+          </div>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="font-extrabold text-base sm:text-lg text-white tracking-tight">Мягкие грани</h1>
@@ -2115,7 +2131,7 @@
       const priceBlock = qty > 1
         ? `🏷 Цена за 1 шт${taxNote}: ${$('finalPriceDisplay').textContent} ₽\n📦 Количество: ${qty} шт\n💰 Итого за партию: ${$('batchPriceDisplay').textContent} ₽`
         : `🏷 Стоимость${taxNote}: ${$('finalPriceDisplay').textContent} ₽`;
-      return `Здравствуйте! ✨\nРасчет заказа «${title}» (${$('itemCategory').value}):\n\n📐 Характеристики (на 1 шт):\n${filInfo}\n• Время печати 1 шт: ~${$('printHours').value || 0} ч ${$('printMinutes').value || 0} мин\n\n${priceBlock}\n\nС уважением, студия «Мягкие грани» 🌿`;
+      return `Здравствуйте! ✨\nРасчет заказа «${title}» (${$('itemCategory').value}):\n\n📐 Характеристики (на 1 шт):\n${filInfo}\n• Время печати 1 шт: ~${$('printHours').value || 0} ч ${$('printMinutes').value || 0} мин\n\n${priceBlock}\n\nС уважением, «Печать 360» 🌿`;
     }
 
     function openClientReceiptModal() { $('receiptTextarea').value = buildClientReceiptText(); $('receiptModal').classList.remove('hidden'); copyReceiptToClipboard(false); }
